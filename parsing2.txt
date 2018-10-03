@@ -1,5 +1,6 @@
-b'<root atribut1="1" attribut2="2" popis="koren"><left popis="levy vnitrni poduzel"><left popis="list zcela nalevo"/><right popis="list"/></left><right popis="pravy vnitrni poduzel"><left popis="list"/><right popis="list zcela napravo"/></right></root>'
+b'<root atribut1="1" attribut2="2" popis="koren"><left popis="levy vnitrni poduzel"><left popis="list zcela nalevo"/><middle popis="list"/><right popis="list"/></left><middle popis="prostredni vnitrni poduzel"><left popis="list"/><middle popis="prostredni list"/><right popis="list"/></middle><right popis="pravy vnitrni poduzel"><left popis="list"/><middle popis="list"/><right popis="list zcela napravo"/></right></root>'
 1
 koren
 levy vnitrni poduzel
+prostredni vnitrni poduzel
 pravy vnitrni poduzel
