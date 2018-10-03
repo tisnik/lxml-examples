@@ -1,0 +1,1 @@
+b'<root atribut1="1" attribut2="2" popis="koren"><left popis="levy vnitrni poduzel"><left popis="list zcela nalevo"/><right popis="list"/></left><right popis="pravy vnitrni poduzel"><left popis="list"/><right popis="list zcela napravo"/></right></root>'
