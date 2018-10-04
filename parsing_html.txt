@@ -1,0 +1,38 @@
+
+
+
+Content:
+b'<html>\n<head><title>\nVery simple HTML page.\n</title></head>\n<body>\n\n<p>You can look at the source of this page by: Right clicking anywhere\nout in space on this page then selecting "View" in the menu.</p>\n<p>This works on any page, but sometimes\nwhat you see may be very complex\nand seem confusing.</p>\n\n<p>\n<b>Please,</b> look at the source and what you see with the browser.\nYou should understand and see the effect of every tag. Use the little\nIcons up in the right of your browser screen to change the size of the\nwindow and see the effect, and how the browser displays this page.</p>\n<p align="right">\nYes, this is a <b>Very Plain</b> page. <i>But it works!</i></p>\n<p><i><b>Remember. We are just getting started,</b> and I haven\'t used\nanything more than I have talked about in a couple pages!</i>\nYes. You will want to be more fancy.\nJust be patient, we\'ll get there.\n\n</p>\n<p align="center">Now create a page like\nthis of your own. <b>Have fun!</b></p>\n</body>\n</html>\n'
+
+
+
+Title:
+
+Very simple HTML page.
+
+
+
+
+Text:
+You can look at the source of this page by: Right clicking anywhere
+out in space on this page then selecting "View" in the menu.
+This works on any page, but sometimes
+what you see may be very complex
+and seem confusing.
+
+
+
+Yes, this is a 
+None
+Now create a page like
+this of your own. 
+
+
+
+Align:
+None
+None
+None
+right
+None
+center
