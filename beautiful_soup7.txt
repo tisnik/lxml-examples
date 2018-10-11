@@ -1,0 +1,97 @@
+Hlavní navigace
+Základy použití režimu org-mode v Emacsu
+17 minut
+org-mode
+vim-orgmode
+org-mode
+Install
+rsync
+TAB
+TAB
+TABu
+C-c -
+C-c *
+M-RETURN
+C-c |
+C-c -
+M-šipka nahoru
+M-šipka dolů
+C-SPACE
+C-c ^
+C-c C-c
+C-c C-c
+C-c C-c
+C-c C-x C-b
+C-c #
+C-c #
+TAB
+TAB
+TAB
+TAB
+C-c *
+C-u C-c *
+A1
+@2$3
+@2$+1
+@2$-1
+$<
+$>
+$3
+@2
+C-c }
+C-c }
+M-šipka
+M-šipka doprava
+M-šipka dolů
+M-šipka dolů
+C-c C-l
+vim-orgmode
+org-mode
+org-mode
+Root.cz
+
+
+
+Tables
+Klávesa	|	Význam klávesy (příkazu)	|	
+TAB	|	změna viditelnosti konkrétního vybraného podstromu (postupně se rotuje mezi různými úrovněmi)	|	
+S-TAB	|	změna viditelnosti obsahu celého bufferu (dokumentu)	|	
+C-u C-u TAB	|	výchozí nastavení viditelnosti	|	
+C-u C-u C-u TAB	|	zobrazení obsahu celého souboru, tj. celé jeho struktury	|	
+-------------------
+Klávesa	|	Význam	|	
+M-RET	|	přidání dalšího prvku do (ne)číslovaného seznamu	|	
+ 	|	 	|	
+C-c –	|	postupná změna typu prvku (číslovaný seznam atd.)	|	
+C-c ^	|	seřazení seznamu	|	
+C-c *	|	převedení aktivního prvku na nadpis	|	
+C-c |	|	převod seznamu (i jiného bloku) na tabulku	|	
+-------------------
+Klávesa	|	Význam	|	
+M-šipka nahoru	|	přesun prvku v rámci seznamu nahoru	|	
+M-šipka dolů	|	přesun prvku v rámci seznamu dolů	|	
+-------------------
+Objekt	|	Klávesová zkratka	|	Význam klávesové zkratky	|	
+strom/podstrom	|	TAB	|	změna viditelnosti konkrétního vybraného podstromu (postupně se rotuje mezi různými úrovněmi)	|	
+strom/podstrom	|	S-TAB	|	změna viditelnosti obsahu celého bufferu (dokumentu)	|	
+celý dokument	|	C-u C-u TAB	|	výchozí nastavení viditelnosti	|	
+celý dokument	|	C-u C-u C-u TAB	|	zobrazení obsahu celého souboru, tj. celé jeho struktury	|	
+seznam	|	M-RET	|	přidání dalšího prvku do (ne)číslovaného seznamu	|	
+seznam	|	C-c –	|	postupná změna typu prvku (číslovaný seznam atd.)	|	
+seznam	|	C-c ^	|	seřazení seznamu	|	
+seznam	|	C-c *	|	převedení aktivního prvku na nadpis	|	
+seznam	|	C-c |	|	převod seznamu (i jiného bloku) na tabulku	|	
+seznam	|	M-šipka nahoru	|	přesun prvku v rámci seznamu nahoru	|	
+seznam	|	M-šipka dolů	|	přesun prvku v rámci seznamu dolů	|	
+checkbox	|	C-c C-c	|	zaškrtnutí/zrušení zaškrtnutí políčka	|	
+checkbox	|	C-c C-x C-b	|	zaškrtnutí/zrušení více políček	|	
+checkboxy	|	C-c #	|	výpočet % nebo zlomku dokončených úkolů	|	
+tabulka	|	C-c *	|	přepočet jednoho řádku	|	
+tabulka	|	C-u C-c *	|	přepočet celé tabulky	|	
+tabulka	|	C-c }	|	zobrazení indexů řádků i sloupců	|	
+tabulka	|	M-šipka doleva	|	prohození dvou sloupců	|	
+tabulka	|	M-šipka doprava	|	prohození dvou sloupců	|	
+tabulka	|	M-šipka nahoru	|	prohození dvou řádků	|	
+tabulka	|	M-šipka dolů	|	prohození dvou řádků	|	
+dokument	|	C-c C-l	|	vložení odkazu (linku)	|	
+-------------------
