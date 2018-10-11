@@ -1,0 +1,44 @@
+Failed to parse and find keywords for '0'
+Failed to parse and find keywords for '0-._.-._.-._.-._.-._.-._.-0'
+Keywords for package '0.0.1'
+['tensorflow']
+['tfrecord']
+Failed to parse and find keywords for '00SMALINUX'
+Failed to parse and find keywords for '01changer'
+Failed to parse and find keywords for '021'
+Failed to parse and find keywords for '02exercicio'
+Failed to parse and find keywords for '0805nexter'
+Failed to parse and find keywords for '0-core-client'
+Failed to parse and find keywords for '0FELA'
+Failed to parse and find keywords for '0-orchestrator'
+Failed to parse and find keywords for '0wdg9nbmpm'
+Failed to parse and find keywords for '0wned'
+Failed to parse and find keywords for '0x'
+Keywords for package '0x10c-asm'
+['notch']
+['asm']
+['dcpu-16']
+['dcpu']
+['assembly']
+['asm']
+Failed to parse and find keywords for '1'
+Failed to parse and find keywords for '100bot'
+Failed to parse and find keywords for '1020-nester'
+Keywords for package '10daysweb'
+['web']
+['framework']
+['async']
+Keywords for package '115wangpan'
+['115']
+['wangpan']
+['pan']
+['cloud']
+['lixian']
+Failed to parse and find keywords for '12factor-vault'
+Failed to parse and find keywords for '131228_pytest_1'
+Failed to parse and find keywords for '1337'
+Keywords for package '153957-theme'
+['photo album']
+['theme']
+['sigal']
+['galleria']
