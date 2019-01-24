@@ -1,4 +1,4 @@
-vmport requests
+import requests
 from bs4 import BeautifulSoup
 
 response = requests.get("https://pypi.python.org/simple/")
