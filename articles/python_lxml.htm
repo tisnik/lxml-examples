@@ -1,0 +1,1295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>Zpracování XML a HTML v Pythonu s využitím knihovny lxml</title>
+<meta name="Author" content="Pavel Tisnovsky" />
+<meta name="Generator" content="vim" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<style type="text/css">
+         body {color:#000000; background:#ffffff;}
+         h1  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#c00000; text-align:center; padding-left:1em}
+         h2  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#0000c0; padding-left:1em; text-align:left}
+         h3  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#c0c0c0; padding-left:1em; text-align:left}
+         h4  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#e0e0e0; padding-left:1em; text-align:left}
+         a   {font-family: arial, helvetica, sans-serif;}
+         li  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ol  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ul  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         p   {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify;}
+         pre {background:#e0e0e0}
+</style>
+</head>
+
+<body>
+
+<h1>Zpracování XML a HTML v Pythonu s využitím knihovny lxml</h1>
+
+<h3>Pavel Tišnovský</h3>
+
+<p></p>
+
+<h1>Úvodník</h1>
+
+<p>Vývojáři se poměrně často setkají s&nbsp;požadavkem na zpracování souborů XML nebo HTML. V&nbsp;Pythonu přitom mají na výběr z&nbsp;několika knihoven, z&nbsp;nichž nejsnáze použitelná je knihovna nazvaná lxml. Dnes si popíšeme základy práce s&nbsp;touto užitečnou knihovnou.</p>
+
+
+
+<h2>Obsah</h2>
+
+<p><a href="#k01">1. Zpracování XML a HTML v&nbsp;Pythonu s&nbsp;využitím knihovny lxml</a></p>
+<p><a href="#k02">2. Instalace knihovny <strong>lxml</strong></a></p>
+<p><a href="#k03">3. Použití objektů typu <strong>Element</strong> a <strong>ElementTree</strong></a></p>
+<p><a href="#k04">4. Uložení vytvořeného XML v&nbsp;komprimované i čitelné podobě</a></p>
+<p><a href="#k05">5. Vložení obsahu (textu) do značek</a></p>
+<p><a href="#k06">6. Nepatrně složitější strom se třemi úrovněmi</a></p>
+<p><a href="#k07">7. Specifikace atributů jednotlivých uzlů ve stromu</a></p>
+<p><a href="#k08">8. Parsování XML s&nbsp;využitím knihovny <strong>lxml</strong></a></p>
+<p><a href="#k09">9. Přístup k&nbsp;atributům a poduzlům naparsovaného dokumentu</a></p>
+<p><a href="#k10">10. Využití cesty (path) při přístupu k&nbsp;uzlům</a></p>
+<p><a href="#k11">11. Použití relativních cest</a></p>
+<p><a href="#k12">12. Přístup k&nbsp;hodnotám uzlů s&nbsp;využitím XPath</a></p>
+<p><a href="#k13">13. Získání cesty k&nbsp;vybranému uzlu pro pozdější použití</a></p>
+<p><a href="#k14">14. Základy zpracování HTML stránek</a></p>
+<p><a href="#k15">15. Použití objektu typu <strong>HTMLParser</strong></a></p>
+<p><a href="#k16">16. Přečtení obsahu všech odstavců, získání atributů prvků atd.</a></p>
+<p><a href="#k17">17. Úplný zdrojový kód příkladu pro parsing HTML stránky</a></p>
+<p><a href="#k18">18. Získávání informací z&nbsp;HTML stránek zajímavější cestou: knihovna Beautiful Soup</a></p>
+<p><a href="#k19">19. Repositář s&nbsp;demonstračními příklady</a></p>
+<p><a href="#k20">20. Odkazy na Internetu</a></p>
+
+
+
+<p><a name="k01"></a></p>
+<h2 id="k01">1. Zpracování XML a HTML v&nbsp;Pythonu s&nbsp;využitím knihovny lxml</h2>
+
+<p>Knihovna <strong>lxml</strong>, s&nbsp;jejímiž základy se dnes seznámíme,
+slouží k&nbsp;načítání (parsování) XML souborů, přístup k&nbsp;jednotlivým
+prvkům výsledného stromu, tvorbě a zapisování nových XML a v&nbsp;případě
+potřeby lze tuto knihovnu použít i pro zpracování HTML stránek. Zajímavé je, že
+se tato knihovna poměrně dobře hodí i pro práci s&nbsp;nevalidními XML, XML bez
+schématu atd. &ndash; tj.&nbsp;se soubory, které může být obtížné zpracovat
+v&nbsp;jiných nástrojích. Vývojářům jsou v&nbsp;případě potřeby
+k&nbsp;dispozici i další zajímavé technologie, zejména XPath (zjednodušeně:
+přístup k&nbsp;elementům a jejich atributům přes doménově specifický jazyk) a
+SAX, tj.&nbsp;možnost zpracovávat XML jako sekvenci elementů, což je přístup
+mnohem méně náročný na paměť. Navíc se většinou jedná o rychlejší způsob práce
+s&nbsp;XML.</p>
+
+<p>Na knihovnu <strong>lxml</strong> se můžeme dívat jako na vhodný doplněk ke
+knihovnám <strong>libxml2</strong> a <strong>libxslt</strong>, pro které
+samozřejmě existují příslušná rozhraní pro Python. Tyto knihovny jsou především
+rychlé a nabízí prakticky všechny užitečné operace pro práci s&nbsp;XML. Na
+druhou stranu se jedná o spíše nízkoúrovňové knihovny poměrně přesně kopírující
+céčkové rozhraní, což některým uživatelům Pythonu nemusí plně vyhovovat. Navíc
+&ndash; jelikož se skutečně jedná o relativně tenkou vrstvu mezi programovacím
+jazykem C a Pythonem &ndash; může poměrně snadno dojít k&nbsp;pádům celé
+aplikace (<i>segfault</i>), což je velmi nepříjemné, zejména při produkčním
+nasazení. Mj.&nbsp;i z&nbsp;těchto dvou důvodů vznikla knihovna
+<strong>lxml</strong>, která je více &bdquo;pythonovská&ldquo; a tudíž snadněji
+použitelná. Za snadnost použití však někdy zaplatíme pomalejším zpracováním
+XML, takže záleží na tom, jak velké soubory a v&nbsp;jakém množství se mají
+zpracovávat.</p>
+
+<p><div class="rs-tip-major">Poznámka: podobným směrem se vydala i známá a
+velmi populární knihovna <strong>requests</strong>, která někdy poměrně složité
+mechanismy obaluje programátorským rozhraním, jež se používá velmi snadno.
+S&nbsp;touto knihovnou jste se mohli seznámit na konkurenčním serveru [<a
+href="https://mojefedora.cz/uzitecne-knihovny-pro-python-requests-1/">1</a>].
+[<a
+href="https://mojefedora.cz/uzitecne-knihovny-a-moduly-pro-python-dalsi-moznosti-nabizene-knihovnou-requests/">2</a>].</div></p>
+
+
+
+<p><a name="k02"></a></p>
+<h2 id="k02">2. Instalace knihovny <strong>lxml</strong></h2>
+
+<p>Pokud v&nbsp;Pythonu vytváříte aplikace používající další moduly (knihovny),
+máte již s&nbsp;velkou pravděpodobností knihovnu <strong>lxml</strong> ve svém
+systému nainstalovanou. O tom, zda je knihovna skutečně nainstalovaná a
+dostupná (interpret ji nalezne), se můžete snadno přesvědčit, a to buď příkazem
+<strong>pip3 show lxml</strong> nebo <strong>pip3 list | grep lxml</strong>
+(což ovšem není tak přesné):</p>
+
+<pre>
+$ <strong>pip3 show lxml</strong>
+&nbsp;
+---
+Name: lxml
+Version: 3.3.3
+Location: /usr/lib/python3/dist-packages
+Requires: 
+</pre>
+
+<p>Jen pro zajímavost (<strong>pip3 show</strong> je ovšem lepší řešení):</p>
+
+<pre>
+$ <strong>pip3 list | grep lxml</strong>
+lxml (3.3.3)
+</pre>
+<p></p>
+
+<p><div class="rs-tip-major">Poznámka: mimochodem &ndash; verze 3.3.3 zobrazená
+na výpisu nahoře je již dnes zastará, takže by se měl provést update na verzi
+4.x.x (nejnovější <a href="https://pypi.org/project/lxml/">stabilní verze je
+v&nbsp;současnosti verze 4.2.5</a>):</div></p>
+
+<pre>
+$ <strong>sudo pip3 install lxml -U</strong>
+Collecting lxml
+  Downloading https://files.pythonhosted.org/packages/03/a4/9eea8035fc7c7670e5eab97f34ff2ef0ddd78a491bf96df5accedb0e63f5/lxml-4.2.5-cp36-cp36m-manylinux1_x86_64.whl (5.8MB)
+    100% |████████████████████████████████| 5.8MB 273kB/s 
+Installing collected packages: lxml
+  Found existing installation: lxml 3.3.3
+    Uninstalling lxml-3.3.3:
+      Successfully uninstalled lxml-3.3.3
+Successfully installed lxml-4.2.5
+</pre>
+
+<p>Nyní znovu zkontrolujeme verzi nainstalované knihovny:</p>
+
+<pre>
+$ <strong>pip3 show lxml</strong>
+&nbsp;
+Name: lxml
+Version: 4.2.5
+Summary: Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API.
+Home-page: http://lxml.de/
+Author: lxml dev team
+Author-email: lxml-dev@lxml.de
+License: BSD
+Location: /usr/lib64/python3.6/site-packages
+Requires: 
+</pre>
+
+<p>Pokud z&nbsp;nějakého důvodu není knihovna <strong>lxml</strong>
+nainstalovaná, je její instalace většinou otázkou několika sekund. Na výpisu
+níže je ukázána instalace této knihovny určené pro Python 2 (používá se tedy
+příkaz <strong>pip</strong> a nikoli <strong>pip3</strong>):</p>
+
+<pre>
+$ <strong>pip install --user lxml</strong>
+&nbsp;
+  Downloading https://files.pythonhosted.org/packages/e5/14/f4343239f955442da9da1919a99f7311bc5627522741bada61b2349c8def/lxml-4.2.5-cp27-cp27mu-manylinux1_x86_64.whl (5.8MB)
+    100% |████████████████████████████████| 5.8MB 89kB/s 
+Installing collected packages: lxml
+Successfully installed lxml-4.2.5
+</pre>
+
+
+
+<p><a name="k03"></a></p>
+<h2 id="k03">3. Použití objektů typu <strong>Element</strong> a <strong>ElementTree</strong></h2>
+
+<p>Nejprve se podívejme na způsob vytváření souborů XML. Vzhledem k&nbsp;tomu,
+že se ve skutečnosti jedná o zápis stromové struktury (s&nbsp;jediným kořenovým
+uzlem, každý uzel/element kromě kořenového má jediného předka, neexistují žádné
+cykly), pravděpodobně nás nepřekvapí, že se XML skutečně konstruuje
+s&nbsp;využitím objektů <strong>Element</strong> a
+<strong>ElementTree</strong>.</p>
+
+<p>Objekt typu <strong>Element</strong> je možné považovat za datovou
+strukturu, jejíž základní vlastnosti jsou převzaté z&nbsp;klasických seznamů a
+současně i slovníků (viz další seznam). Instance třídy <strong>Element</strong>
+představuje jeden uzel stromu a může obsahovat celou řadu vlastností
+(<i>properties</i>), především pak:</p>
+
+<ul>
+
+<li>Značku (<i>tag</i>), což je řetězec se jménem elementu (uzlu).</li>
+
+<li>Atributy přiřazené k&nbsp;elementu. Interně se jedná o slovník
+s&nbsp;dvojicemi jméno atributu:hodnota atributu. Počet atributů je libovolný,
+jejich jméno jsou samozřejmě unikátní.</li>
+
+<li>Text (hodnota) ve značce. Může být prázdný. Viz navazující kapitoly.</li>
+
+<li>Všechny přímé potomky (<i>children</i>). Interně se jedná o sekvenci a opět
+platí, že koncový uzel (list) nemá žádné potomky.</li>
+
+</ul>
+
+<p>Existuje několik způsobů, jak zavolat konstruktor třídy
+<strong>Element</strong>. V&nbsp;tom nejjednodušším případě se konstruktoru
+předá pouze značka (jméno) elementu ve formě řetězce:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root")
+</pre>
+
+<p>Potomky jakéhokoli elementu můžeme vytvořit s&nbsp;využitím
+<strong>SubElement</strong>. Jedná se o tovární funkci, které se předává
+<i>reference na předka</i> (dříve vytvořený uzel/element) a taktéž značka
+(jméno) nového elementu. K&nbsp;jedinému uzlu, který jsme vytvořili předchozím
+příkazem, tedy přidáme dva potomky následujícím způsobem:</p>
+
+<pre>
+left = ET.SubElement(root, "left")
+right = ET.SubElement(root, "right")
+</pre>
+
+<p>V&nbsp;dalším kroku již můžeme vytvořit instanci třídy
+<strong>ElementTree</strong>, která celou hierarchii uzlů zabaluje.
+Konstruktoru této třídy se předává kořenový uzel:</p>
+
+<pre>
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+</pre>
+
+<p>Tato třída nabízí uživatelům celou řadu užitečných metod. Například se jedná
+o metodu nazvanou <strong>find</strong> sloužící k&nbsp;nalezení určitého uzlu
+na základě zadané cesty; dále pak o metody pojmenované <strong>findall</strong>
+a <strong>findnext</strong>, popř.&nbsp;o metodu <strong>write</strong>, kterou
+je možné použít pro uložení stromu do souboru (v&nbsp;XML podobě).</p>
+
+
+
+<p><a name="k04"></a></p>
+<h2 id="k04">4. Uložení vytvořeného XML v&nbsp;komprimované i čitelné podobě</h2>
+
+<p>K&nbsp;poslední metodě, o níž jsme se zmínili <a href="#k03">na konci
+předchozí kapitoly</a>, se na chvíli vraťme. Tuto metodu totiž použijeme ve
+chvíli, kdy potřebujeme vytvořit výsledný XML soubor. Metodě se předává buď
+pouze název souboru, nebo i další nepovinné (pojmenované) parametry.
+Nejjednodušší způsob použití vypadá následovně:</p>
+
+<pre>
+tree.write("test1.xml")
+</pre>
+
+<p>Nepovinným parametrem <strong>pretty_print</strong> si můžeme (alespoň
+částečně) vynutit vygenerování XML souboru určeného pro čtení uživateli.
+Poduzly jsou v&nbsp;takovém případě odsazeny od levého okraje, ovšem pouze
+v&nbsp;případě, že neobsahují žádný text (což je v&nbsp;našem případě
+splněno):</p>
+
+<pre>
+tree.write("test1_pretty_print.xml", pretty_print=True)
+</pre>
+
+<p>Podívejme se nyní na <a
+href="https://github.com/tisnik/lxml-examples/blob/master/elementtree1.py">první
+demonstrační příklad</a>, v&nbsp;němž vytvoříme jednoduchý strom s&nbsp;kořenem
+a dvěma poduzly. Tento strom následně uložíme do dvou XML souborů &ndash; bez
+formátování a s&nbsp;formátováním:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root")
+&nbsp;
+left = ET.SubElement(root, "left")
+right = ET.SubElement(root, "right")
+&nbsp;
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+&nbsp;
+<i># zapis do souboru</i>
+tree.write("test1.xml")
+&nbsp;
+tree.write("test1_pretty_print.xml", pretty_print=True)
+</pre>
+
+<p>První XML soubor je vygenerován takovým způsobem, aby byl co nejkratší:</p>
+
+<pre>
+&lt;root&gt;&lt;left/&gt;&lt;right/&gt;&lt;/root&gt;
+</pre>
+
+<p>Druhý XML soubor naopak poduzly odsazuje:</p>
+
+<pre>
+&lt;root&gt;
+  &lt;left/&gt;
+  &lt;right/&gt;
+&lt;/root&gt;
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: povšimněte si, že prázdné uzly jsou ve
+výchozím nastavení zapisovány stylem &lt;značka/&gt;, tj.&nbsp;neuvádí se
+zbytečně dlouhý zápis &lt;značka&gt;&lt;/značka&gt;. Dále neobsahují výsledné
+XML definici verze XML ani určení kódování. Tyto dva prvky je možné do
+výsledného souboru v&nbsp;případě potřeby přidat.</div></p>
+
+
+
+<p><a name="k05"></a></p>
+<h2 id="k05">5. Vložení obsahu (textu) do značek</h2>
+
+<p>Zkusme si nyní vytvořit nepatrně složitější XML soubor, v&nbsp;němž budou
+poduzly obsahovat nějaký text. Ten může být libovolný, tj.&nbsp;můžeme použít
+například klasické ASCII znaky (univerzálně podporovaná podmnožina
+Unicode):</p>
+
+<pre>
+root = ET.Element("root")
+root.text = "any text"
+</pre>
+
+<p>Ovšem nic nám nebrání použít i další znaky Unicode:</p>
+
+<pre>
+left = ET.SubElement(root, "left")
+left.text = "ěščř"
+</pre>
+
+<p>Dokonce můžeme použít i znaky, které mají v&nbsp;XML speciální význam:</p>
+
+<pre>
+middle = ET.SubElement(root, "middle")
+middle.text = "&lt;&amp;&gt;"
+</pre>
+
+<p>A samozřejmě je možné použít i prázdný text:</p>
+
+<pre>
+right = ET.SubElement(root, "right")
+right.text = ""
+</pre>
+
+<p>XML soubory s&nbsp;takovými uzly vytvoříme v&nbsp;dnešním <a
+href="https://github.com/tisnik/lxml-examples/blob/master/elementtree2.py">druhém
+demonstračním příkladu</a>:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root")
+root.text = "any text"
+&nbsp;
+left = ET.SubElement(root, "left")
+left.text = "ěščř"
+&nbsp;
+middle = ET.SubElement(root, "middle")
+middle.text = "&lt;&amp;&gt;"
+&nbsp;
+right = ET.SubElement(root, "right")
+right.text = ""
+&nbsp;
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+&nbsp;
+<i># zapis do souboru</i>
+tree.write("test2.xml")
+&nbsp;
+tree.write("test2_pretty_print.xml", pretty_print=True)
+</pre>
+
+<p>Výsledek bude vypadat následovně:</p>
+
+<pre>
+&lt;root&gt;any text&lt;left&gt;&#283;&#353;&#269;&#345;&lt;/left&gt;&lt;middle&gt;&lt;&amp;&gt;&lt;/middle&gt;&lt;right&gt;&lt;/right&gt;&lt;/root&gt;
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: znaky mimo základní sadu ASCII jsou
+reprezentovány svým kódem, takže za cenu menší čitelnosti získáme soubor, který
+bude zpracovatelný i ASCII parserem (pokud takový parser pro XML
+existuje).</div></p>
+
+<p>Vzhledem k&nbsp;tomu, že uzly obsahují text, bude výsledek neformátovaný i
+v&nbsp;případě, že použijeme parametr <strong>pretty_print</strong>:</p>
+
+<pre>
+&lt;root&gt;any text&lt;left&gt;&#283;&#353;&#269;&#345;&lt;/left&gt;&lt;middle&gt;&lt;&amp;&gt;&lt;/middle&gt;&lt;right&gt;&lt;/right&gt;&lt;/root&gt;
+</pre>
+
+<p>Nyní si zkusme ověřit, co se stane ve chvíli, kdy do textového uzlu přidáme
+text s&nbsp;konci řádků:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root")
+root.text = "text, který může\nobsahovat i konce řádků"
+&nbsp;
+left = ET.SubElement(root, "left")
+left.text = "ěščř"
+&nbsp;
+right = ET.SubElement(root, "right")
+right.text = "\n\n\n"
+&nbsp;
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+&nbsp;
+<i># zapis do souboru</i>
+tree.write("test3.xml")
+&nbsp;
+tree.write("test3_pretty_print.xml", pretty_print=True)
+</pre>
+
+<p>Konce řádků se přesně objeví i ve výsledném XML:</p>
+
+<pre>
+&lt;root&gt;text, kter&#253; m&#367;&#382;e
+obsahovat i konce &#345;&#225;dk&#367;&lt;left&gt;&#283;&#353;&#269;&#345;&lt;/left&gt;&lt;right&gt;
+&nbsp;
+&nbsp;
+&lt;/right&gt;&lt;/root&gt;
+</pre>
+
+<p>Vzhledem k&nbsp;tomu, že uzly obsahují text, bude výsledek neformátovaný i
+v&nbsp;případě, že použijeme parametr <strong>pretty_print</strong>:</p>
+
+<pre>
+&lt;root&gt;text, kter&#253; m&#367;&#382;e
+obsahovat i konce &#345;&#225;dk&#367;&lt;left&gt;&#283;&#353;&#269;&#345;&lt;/left&gt;&lt;right&gt;
+&nbsp;
+&nbsp;
+&lt;/right&gt;&lt;/root&gt;
+</pre>
+
+
+
+<p><a name="k06"></a></p>
+<h2 id="k06">6. Nepatrně složitější strom se třemi úrovněmi</h2>
+
+<p>Další demonstrační příklad je uveden pouze pro úplnost a pro ukázku nepatrně
+složitějšího XML. Vytvoříme v&nbsp;něm stromovou strukturu se třemi úrovněmi.
+Na první úrovni se samozřejmě nachází kořenový uzel. Na úrovni druhé jsou tři
+uzly (levý, prostřední a pravý) a každý z&nbsp;těchto uzlů obsahuje tři potomky
+(listy):</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root")
+&nbsp;
+left1stLevel = ET.SubElement(root, "left")
+middle1stLevel = ET.SubElement(root, "middle")
+right1stLevel = ET.SubElement(root, "right")
+&nbsp;
+left2ndLevelA = ET.SubElement(left1stLevel, "left")
+middle2ndLevelA = ET.SubElement(left1stLevel, "middle")
+right2ndLevelA = ET.SubElement(left1stLevel, "right")
+&nbsp;
+left2ndLevelB = ET.SubElement(middle1stLevel, "left")
+middle2ndLevelB = ET.SubElement(middle1stLevel, "middle")
+right2ndLevelB = ET.SubElement(middle1stLevel, "right")
+&nbsp;
+left2ndLevelC = ET.SubElement(right1stLevel, "left")
+middle2ndLevelC = ET.SubElement(right1stLevel, "middle")
+right2ndLevelC = ET.SubElement(right1stLevel, "right")
+&nbsp;
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+&nbsp;
+<i># zapis do souboru</i>
+tree.write("test4.xml")
+&nbsp;
+tree.write("test4_pretty_print.xml", pretty_print=True)
+</pre>
+
+<p>Výsledné XML zapsané ve zhuštěné podobě na jediném řádku:</p>
+
+<pre>
+&lt;root&gt;&lt;left&gt;&lt;left/&gt;&lt;middle/&gt;&lt;right/&gt;&lt;/left&gt;&lt;middle&gt;&lt;left/&gt;&lt;middle/&gt;&lt;right/&gt;&lt;/middle&gt;&lt;right&gt;&lt;left/&gt;&lt;middle/&gt;&lt;right/&gt;&lt;/right&gt;&lt;/root&gt;
+</pre>
+
+<p>V&nbsp;případě použití parametru <strong>pretty_print</strong> je ze
+struktury a odsazení uzlů jasně patrná původní stromová struktura, kterou jsme
+v&nbsp;příkladu vytvořili:</p>
+
+<pre>
+&lt;root&gt;
+  &lt;left&gt;
+    &lt;left/&gt;
+    &lt;middle/&gt;
+    &lt;right/&gt;
+  &lt;/left&gt;
+  &lt;middle&gt;
+    &lt;left/&gt;
+    &lt;middle/&gt;
+    &lt;right/&gt;
+  &lt;/middle&gt;
+  &lt;right&gt;
+    &lt;left/&gt;
+    &lt;middle/&gt;
+    &lt;right/&gt;
+  &lt;/right&gt;
+&lt;/root&gt;
+</pre>
+
+
+
+<p><a name="k07"></a></p>
+<h2 id="k07">7. Specifikace atributů jednotlivých uzlů ve stromu</h2>
+
+<p>Již z&nbsp;předchozího popisu víme, že uzel může kromě textu (umístěného
+uvnitř jeho značky) obsahovat i libovolný počet atributů, přičemž každý atribut
+má své jméno a hodnotu. Jména atributů by měla být unikátní a mělo by se jednat
+o platné identifikátory odpovídající této gramatice:</p>
+
+<pre>
+NameStartChar ::= ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+NameChar ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+</pre>
+
+<p>Na hodnotu atributu se toto omezení nevztahuje, pouze je zapotřebí řešit
+kódování uvozovek, úhlových závorek atd. To za nás provede knihovna
+<strong>lxml</strong> automaticky.</p>
+
+<p>V&nbsp;následujícím příkladu opět vytvoříme strom se třemi úrovněmi, nyní
+však budou mít jednotlivé uzly přiřazené atributy (všechny budou mít atribut
+&bdquo;popis&ldquo;):</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root", atribut1="1", attribut2="2", popis="koren")
+&nbsp;
+left1stLevel = ET.SubElement(root, "left", popis="levy vnitrni poduzel")
+middle1stLevel = ET.SubElement(root, "middle", popis="prostredni vnitrni poduzel")
+right1stLevel = ET.SubElement(root, "right", popis="pravy vnitrni poduzel")
+&nbsp;
+left2ndLevelA = ET.SubElement(left1stLevel, "left", popis="list zcela nalevo")
+middle2ndLevelA = ET.SubElement(left1stLevel, "middle", popis="list")
+right2ndLevelA = ET.SubElement(left1stLevel, "right", popis="list")
+&nbsp;
+left2ndLevelB = ET.SubElement(middle1stLevel, "left", popis="list")
+middle2ndLevelB = ET.SubElement(middle1stLevel, "middle", popis="prostredni list")
+right2ndLevelB = ET.SubElement(middle1stLevel, "right", popis="list")
+&nbsp;
+left2ndLevelC = ET.SubElement(right1stLevel, "left", popis="list")
+middle2ndLevelC = ET.SubElement(right1stLevel, "middle", popis="list")
+right2ndLevelC = ET.SubElement(right1stLevel, "right", popis="list zcela napravo")
+&nbsp;
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+&nbsp;
+<i># zapis do souboru</i>
+tree.write("test5.xml")
+&nbsp;
+tree.write("test5_pretty_print.xml", pretty_print=True)
+</pre>
+
+<p>Výsledné XML zapsané ve zhuštěné podobě na jediném řádku:</p>
+
+<pre>
+&lt;root atribut1="1" attribut2="2" popis="koren"&gt;&lt;left popis="levy vnitrni poduzel"&gt;&lt;left popis="list zcela nalevo"/&gt;&lt;middle popis="list"/&gt;&lt;right popis="list"/&gt;&lt;/left&gt;&lt;middle popis="prostredni vnitrni poduzel"&gt;&lt;left popis="list"/&gt;&lt;middle popis="prostredni list"/&gt;&lt;right popis="list"/&gt;&lt;/middle&gt;&lt;right popis="pravy vnitrni poduzel"&gt;&lt;left popis="list"/&gt;&lt;middle popis="list"/&gt;&lt;right popis="list zcela napravo"/&gt;&lt;/right&gt;&lt;/root&gt;
+</pre>
+
+<p>V&nbsp;případě použití parametru <strong>pretty_print</strong> je ze
+struktury a odsazení uzlů jasně patrná původní stromová struktura, kterou jsme
+v&nbsp;příkladu vytvořili:</p>
+
+<pre>
+&lt;root atribut1="1" attribut2="2" popis="koren"&gt;
+  &lt;left popis="levy vnitrni poduzel"&gt;
+    &lt;left popis="list zcela nalevo"/&gt;
+    &lt;middle popis="list"/&gt;
+    &lt;right popis="list"/&gt;
+  &lt;/left&gt;
+  &lt;middle popis="prostredni vnitrni poduzel"&gt;
+    &lt;left popis="list"/&gt;
+    &lt;middle popis="prostredni list"/&gt;
+    &lt;right popis="list"/&gt;
+  &lt;/middle&gt;
+  &lt;right popis="pravy vnitrni poduzel"&gt;
+    &lt;left popis="list"/&gt;
+    &lt;middle popis="list"/&gt;
+    &lt;right popis="list zcela napravo"/&gt;
+  &lt;/right&gt;
+&lt;/root&gt;
+</pre>
+
+
+
+<p><a name="k08"></a></p>
+<h2 id="k08">8. Parsování XML s&nbsp;využitím knihovny <strong>lxml</strong></h2>
+
+<p>Ve druhé části článku si ukážeme základy parsování XML, samozřejmě opět
+s&nbsp;využitím knihovny <strong>lxml</strong>. V&nbsp;následujícím příkladu
+využijeme soubor &bdquo;test5.xml&ldquo;, který vznikl spuštěním demonstračního
+příkladu <a href="#k07">ze sedmé kapitoly</a>. Tento soubor &ndash; který
+neobsahuje specifikaci verze XML, kódování, o schématu ani nemluvě atd. &ndash;
+dokáže knihovna <strong>lxml</strong> bez problémů načíst a zparsovat.
+Výsledkem bude objekt představující rekonstruovaný strom:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "test5.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+print(ET.tostring(root))
+</pre>
+
+<p>Takto se vypíše rekonstruovaný strom začínající kořenovým uzlem, který jsme
+získali metodou <strong>getroot</strong>::</p>
+
+<pre>
+b'&lt;root atribut1="1" attribut2="2" popis="koren"&gt;&lt;left popis="levy vnitrni poduzel"&gt;&lt;left popis="list zcela nalevo"/&gt;&lt;right popis="list"/&gt;&lt;/left&gt;&lt;right popis="pravy vnitrni poduzel"&gt;&lt;left popis="list"/&gt;&lt;right popis="list zcela napravo"/&gt;&lt;/right&gt;&lt;/root&gt;'
+</pre>
+
+
+
+<p><a name="k09"></a></p>
+<h2 id="k09">9. Přístup k&nbsp;atributům a poduzlům naparsovaného dokumentu</h2>
+
+<p>Ve chvíli, kdy máme k&nbsp;dispozici objekt představující kořen stromu
+vzniklého parsingem XML souboru, je možné postupně začít získávat atributy
+kořenového uzlu, jeho text a samozřejmě i potomky, tj.&nbsp;uzly ležící o jednu
+úroveň níže. Přístup k&nbsp;atributům:</p>
+
+<pre>
+print(root.get("atribut1"))
+print(root.get("popis"))
+</pre>
+
+<p>Získání potomků:</p>
+
+<pre>
+children = root.getchildren()
+</pre>
+
+<p>Tato metoda obecně vrací sekvenci, takže se k&nbsp;jednotlivým potomkům
+dostaneme například přes programovou smyčku typu <i>for-each</i>:</p>
+
+<pre>
+for child in children:
+    print(child.get("popis"))
+</pre>
+
+<p>Celý demonstrační příklad, který zpracuje jednoduchý XML soubor a vypíše
+atributy kořenového uzlu i jeho potomky (resp.&nbsp;přesněji řečeno atribut
+&bdquo;popis&ldquo; potomků), bude vypadat následovně:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "test5.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+<i># print(ET.tostring(root))</i>
+&nbsp;
+print(root.get("atribut1"))
+print(root.get("popis"))
+&nbsp;
+children = root.getchildren()
+&nbsp;
+for child in children:
+    print(child.get("popis"))
+</pre>
+
+<p>Výsledkem bude následujících pět řádků vypsaných na standardní výstup:</p>
+
+<pre>
+1
+koren
+levy vnitrni poduzel
+prostredni vnitrni poduzel
+pravy vnitrni poduzel
+</pre>
+
+
+
+<p><a name="k10"></a></p>
+<h2 id="k10">10. Využití cesty (path) při přístupu k&nbsp;uzlům</h2>
+
+<p>V&nbsp;některých jednodušších případech si sice vystačíme se zpracováním
+stromu pomocí metody <strong>getchildren</strong>, ovšem knihovna
+<strong>lxml</strong> nám dává k&nbsp;dispozici mnohem silnější technologii
+nazvanou <a href="https://en.wikipedia.org/wiki/XPath">XPath</a> neboli
+&bdquo;XML Path Language&ldquo;. Jedná se o doménově specifický jazyk (DSL),
+který primárně slouží k&nbsp;přístupu k&nbsp;elementům stromové struktury na
+základě absolutně nebo relativně zadané cesty. Možnosti nabízené XPathem jsou
+však větší; s&nbsp;některými z&nbsp;nich se seznámíme příště. Nyní si ukažme
+pravděpodobně nejjednodušší příklad, v&nbsp;němž použijeme cestu přesně
+popisující jediný uzel ve stromu. Cesta je popsána jmény značek (což je
+v&nbsp;našem stromu zcela jednoznačné, podobně jako můžeme popsat cestu
+k&nbsp;souboru v&nbsp;adresářové struktuře):</p>
+
+<pre>
+/root/right/right
+</pre>
+
+<p>Příklad získá všechny uzly odpovídající zadané cestě a vypíše popisy těchto
+uzlů:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "test5.xml"
+tree = ET.parse(xml)
+&nbsp;
+<i># absolutni cesta</i>
+nodes = tree.xpath("<strong>/root/right/right</strong>")
+&nbsp;
+print("Nodes: {}".format(len(nodes)))
+&nbsp;
+for node in nodes:
+    print(node.get("popis"))
+</pre>
+
+<p>Vzhledem k&nbsp;tomu, že cesta přesně specifikuje jediný uzel/element, bude
+výpis vypadat takto:</p>
+
+<pre>
+Nodes: 1
+list zcela napravo
+</pre>
+
+<p>Můžeme ovšem postupovat i jinak a metodu <strong>xpath</strong> volat přímo
+na kořenovém elementu a nikoli nad celým stromem. Zbytek příkladu bude stejný a
+stejný bude v&nbsp;tomto případě i výsledek:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "test5.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+<i># absolutni cesta</i>
+nodes = root.xpath("<strong>/root/right/right</strong>")
+&nbsp;
+print("Nodes: {}".format(len(nodes)))
+&nbsp;
+for node in nodes:
+    print(node.get("popis"))
+</pre>
+
+<p>S&nbsp;výsledkem:</p>
+
+<pre>
+Nodes: 1
+list zcela napravo
+</pre>
+
+
+
+<p><a name="k11"></a></p>
+<h2 id="k11">11. Použití relativních cest</h2>
+
+<p>Cesta může být zadána i relativně, tj.&nbsp;bez úvodního lomítka. Vzhledem
+k&nbsp;tomu, že metodu <strong>xpath</strong> opět voláme nad kořenovým uzlem,
+bude výsledek stejný, protože relativní cesta se bude vztahovat k&nbsp;tomuto
+uzlu:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "test5.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+<i># relativni cesta</i>
+nodes = root.xpath("<strong>right/right</strong>")
+&nbsp;
+print("Nodes: {}".format(len(nodes)))
+&nbsp;
+for node in nodes:
+    print(node.get("popis"))
+</pre>
+
+<p>S&nbsp;výsledkem:</p>
+
+<pre>
+Nodes: 1
+list zcela napravo
+</pre>
+
+
+
+<p><a name="k12"></a></p>
+<h2 id="k12">12. Přístup k&nbsp;hodnotám uzlů s&nbsp;využitím XPath</h2>
+
+<p>Možnosti doménově specifického jazyka XPath jsou ve skutečnosti mnohem
+větší. Pro zajímavost si ukažme, jak můžeme získat text (hodnotu) libovolného
+uzlu/elementu přímo specifikací cesty:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "test2.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+text = root.xpath("<strong>//text()</strong>")
+print(text)
+&nbsp;
+text = root.xpath("<strong>left//text()</strong>")
+print(text)
+&nbsp;
+text = tree.xpath("<strong>/root/left//text()</strong>")
+print(text)
+</pre>
+
+<p>Povšimněte si, že v&nbsp;prvním případě se vrátí text všech nalezených uzlů,
+ve druhém případě text z&nbsp;uzlu &bdquo;left&ldquo; (je použita relativní
+cesta) a v&nbsp;případě posledním textu taktéž z&nbsp;uzlu &bdquo;left&ldquo;,
+ovšem specifikovaného absolutní cestou:</p>
+
+<pre>
+['any text', 'ěščř', '&lt;&amp;&gt;']
+['ěščř']
+['ěščř']
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: toto je stále velmi jednoduchý až
+primitivní příklad. Cesty totiž mohou být zadány mnohem obecněji, například
+můžeme specifikovat, že se mezi kořenovým uzlem a hledaným uzlem může nacházet
+složitější hierarchie (více úrovní), při vyhledání se mohou používat různé typy
+testů atd. Složitější a nutno říci že i praktičtější příklady si uvedeme
+příště.</div></p>
+
+
+
+<p><a name="k13"></a></p>
+<h2 id="k13">13. Získání cesty k&nbsp;vybranému uzlu pro pozdější použití</h2>
+
+<p>Při konstrukci stromu popř.&nbsp;při analýze naparsovaného XML může být
+užitečné zjistit, jak by vlastně mohla vypadat cesta k&nbsp;nějakém uzlu. I
+tuto možnost knihovna <strong>lxml</strong> nabízí, protože pro libovolný uzel
+(i uzel kořenový) je možné zavolat metodu <strong>getpath</strong>, která vrátí
+absolutní cestu k&nbsp;danému uzlu/elementu:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+root = ET.Element("root", atribut1="1", attribut2="2", popis="koren")
+&nbsp;
+left1stLevel = ET.SubElement(root, "left", popis="levy vnitrni poduzel")
+right1stLevel = ET.SubElement(root, "right", popis="pravy vnitrni poduzel")
+&nbsp;
+left2ndLevelA = ET.SubElement(left1stLevel, "left", popis="list zcela nalevo")
+right2ndLevelA = ET.SubElement(left1stLevel, "right", popis="list")
+&nbsp;
+left2ndLevelB = ET.SubElement(right1stLevel, "left", popis="list")
+right2ndLevelB = ET.SubElement(right1stLevel, "right", popis="list zcela napravo")
+&nbsp;
+<i># konstrukce stromu</i>
+tree = ET.ElementTree(root)
+&nbsp;
+print(tree.getpath(root))
+print(tree.getpath(left1stLevel))
+print(tree.getpath(right2ndLevelB))
+</pre>
+
+<p>Výsledkem je trojice absolutních cest:</p>
+
+<pre>
+/root
+/root/left
+/root/right/right
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: ve skutečnosti je ovšem situace
+komplikovanější, protože poduzly na stejné úrovni mohou mít shodné značky. Sami
+si ostatně vyzkoušejte, jak v&nbsp;takovém případě budou cesty fungovat a zda
+budou jednoznačné.</div></p>
+
+
+
+<p><a name="k14"></a></p>
+<h2 id="k14">14. Základy zpracování HTML stránek</h2>
+
+<p>Knihovnu <strong>lxml</strong> je možné v&nbsp;případě potřeby použít i pro
+zpracování HTML stránek. Při zpracovávání HTML stránek se nevyžaduje (a
+popravdě řečeno ani neočekává) validita stránky, takže se specializovaný parser
+nazvaný <strong>HTMLParser</strong> snaží z&nbsp;dodaného zdrojového kódu
+stránky získat korektní stromovou strukturu, a to i v&nbsp;případě, že autor
+například neuzavírá značky, nevkládá uzavírací značky ve správném pořadí atd.
+Podívejme se nyní na jednoduchý příklad zpracovatelné HTML stránky, konkrétně
+na stránku dostupnou na adrese <a
+href="http://www.zyvra.org/html/simple.htm">http://www.zyvra.org/html/simple.htm</a>.
+Zdrojový kód této stránky vypadá následovně (stylem zápisu trošku připomíná
+minulé tisíciletí :-):</p>
+
+<pre>
+&lt;html&gt;&lt;head&gt;&lt;title&gt;
+Very simple HTML page.
+&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&nbsp;
+&lt;p&gt;You can look at the source of this page by: Right clicking anywhere
+out in space on this page then selecting "View" in the menu.&lt;/p&gt;
+&lt;p&gt;This works on any page, but sometimes
+what you see may be very complex
+and seem confusing.&lt;/p&gt;
+&nbsp;
+&lt;p&gt;
+&lt;b&gt;Please,&lt;/b&gt; look at the source and what you see with the browser.
+You should understand and see the effect of every tag. Use the little
+Icons up in the right of your browser screen to change the size of the
+window and see the effect, and how the browser displays this page.&lt;/p&gt;
+&lt;p align="right"&gt;
+Yes, this is a &lt;b&gt;Very Plain&lt;/b&gt; page. &lt;i&gt;But it works!&lt;/i&gt;&lt;/p&gt;
+&lt;p&gt;&lt;i&gt;&lt;b&gt;Remember. We are just getting started,&lt;/b&gt; and I haven't used
+anything more than I have talked about in a couple pages!&lt;/i&gt;
+Yes. You will want to be more fancy.
+Just be patient, we'll get there.
+&nbsp;
+&lt;p align="center"&gt;Now create a page like
+this of your own. &lt;b&gt;Have fun!&lt;/b&gt;&lt;/p
+&nbsp;
+&lt;/body&gt;&lt;/html&gt;
+</pre>
+
+<p>Povšimněte si například toho, že se ve stránce objevují neuzavřené značky
+&lt;p&gt;, chybí informace o verzi HTML, o kódování atd. I přesto je možné
+takovou stránku zpracovat, což je ukázáno <a href="#k15">v&nbsp;následující
+kapitole</a>.</p>
+
+
+
+<p><a name="k15"></a></p>
+<h2 id="k15">15. Použití objektu typu <strong>HTMLParser</strong></h2>
+
+<p>Realizace příkladu pro zpracování HTML stránky je poměrně přímočará. Nejprve
+(přesněji řečeno po importu <strong>lxml.etree</strong>) vytvoříme instanci
+parseru HTML stránek:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+parser = ET.HTMLParser()
+</pre>
+
+<p>Dále se pokusíme stránku načíst a ihned poté zparsovat. Povšimněte si, že
+funkce <strong>lxml.etree.parse</strong> rozpozná URL a stránku v&nbsp;případě
+potřeby stáhne (pokud ovšem není dostupná na serveru s&nbsp;HTTPS!):</p>
+
+<pre>
+url = "http://www.zyvra.org/html/simple.htm"
+&nbsp;
+tree = ET.parse(url, parser)
+&nbsp;
+root = tree.getroot()
+</pre>
+
+<p>Nyní, když máme k&nbsp;dispozici celý strom i kořenový prvek, se můžeme
+pokusit zpětně zrekonstruovat řetězec se zdrojovým kódem stránky:</p>
+
+<pre>
+print("\n\n\nContent:")
+result = ET.tostring(tree.getroot(), pretty_print=True, method="html")
+print(result)
+</pre>
+
+<p>S&nbsp;výsledkem:</p>
+
+<pre>
+Content:
+b'&lt;html&gt;\n&lt;head&gt;&lt;title&gt;\nVery simple HTML page.\n&lt;/title&gt;&lt;/head&gt;\n&lt;body&gt;\n\n&lt;p&gt;You can look at the source of this page by: Right clicking anywhere\nout in space on this page then selecting "View" in the menu.&lt;/p&gt;\n&lt;p&gt;This works on any page, but sometimes\nwhat you see may be very complex\nand seem confusing.&lt;/p&gt;\n\n&lt;p&gt;\n&lt;b&gt;Please,&lt;/b&gt; look at the source and what you see with the browser.\nYou should understand and see the effect of every tag. Use the little\nIcons up in the right of your browser screen to change the size of the\nwindow and see the effect, and how the browser displays this page.&lt;/p&gt;\n&lt;p align="right"&gt;\nYes, this is a &lt;b&gt;Very Plain&lt;/b&gt; page. &lt;i&gt;But it works!&lt;/i&gt;&lt;/p&gt;\n&lt;p&gt;&lt;i&gt;&lt;b&gt;Remember. We are just getting started,&lt;/b&gt; and I haven\'t used\nanything more than I have talked about in a couple pages!&lt;/i&gt;\nYes. You will want to be more fancy.\nJust be patient, we\'ll get there.\n\n&lt;/p&gt;\n&lt;p align="center"&gt;Now create a page like\nthis of your own. &lt;b&gt;Have fun!&lt;/b&gt;&lt;/p&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n'
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: v&nbsp;tomto případě neměla volba
+<strong>pretty_print</strong> žádoucí účinek, protože jednotlivé elementy
+(značky) obsahují text.</div></p>
+
+<p>Popř.&nbsp;získat text titulku:</p>
+
+<pre>
+print("\n\n\nTitle:")
+title = root.xpath("/html/head/title/text()")
+print(title[0])
+</pre>
+
+<p>S&nbsp;výsledky:</p>
+
+<pre>
+Title:
+&nbsp; 
+Very simple HTML page.
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: zde se předpokládá, že titulek bude na
+stránce zadán pouze jedenkrát. Korektnější by samozřejmě byla kontrola, zda
+<strong>title</strong> není prázdným seznamem.</div></p>
+
+
+
+<p><a name="k16"></a></p>
+<h2 id="k16">16. Přečtení obsahu všech odstavců, získání atributů prvků atd.</h2>
+
+<p>Dále můžeme získat všechny odstavce uzavřené do značky &lt;p&gt;, a to opět
+použitím metody <strong>xpath</strong>:</p>
+
+<pre>
+divs = root.xpath("body//p")
+</pre>
+
+<p>Vypsat můžeme textový obsah všech nalezených odstavců (obsah může být
+prázdný v&nbsp;případě nepárové značky):</p>
+
+<pre>
+print("\n\n\nText:")
+&nbsp;
+for div in divs:
+    print(div.text)
+</pre>
+
+<p>S&nbsp;výsledky:</p>
+
+<pre>
+Text:
+You can look at the source of this page by: Right clicking anywhere
+out in space on this page then selecting "View" in the menu.
+This works on any page, but sometimes
+what you see may be very complex
+and seem confusing.
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+Yes, this is a 
+<strong>None</strong>
+Now create a page like
+this of your own.
+</pre>
+
+<p>Samozřejmě nám nikdo nebrání získat informace o libovolném atributu,
+například o atributu &bdquo;class&ldquo;, &bdquo;style&ldquo; či
+&bdquo;align&ldquo;:</p>
+
+<pre>
+print("\n\n\nAlign:")
+&nbsp;
+for div in divs:
+    print(div.get("align"))
+</pre>
+
+<p>S&nbsp;výsledky:</p>
+
+<pre>
+Align:
+None
+None
+None
+right
+None
+center
+</pre>
+
+
+
+<p><a name="k17"></a></p>
+<h2 id="k17">17. Úplný zdrojový kód příkladu pro parsing HTML stránky</h2>
+
+<p>Úplný zdrojový kód tohoto demonstračního příkladu vypadá následovně:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+parser = ET.HTMLParser()
+&nbsp;
+url = "http://www.zyvra.org/html/simple.htm"
+&nbsp;
+tree   = ET.parse(url, parser)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+print("\n\n\nContent:")
+result = ET.tostring(tree.getroot(), pretty_print=True, method="html")
+print(result)
+&nbsp;
+print("\n\n\nTitle:")
+title = root.xpath("/html/head/title/text()")
+print(title[0])
+&nbsp;
+divs = root.xpath("body//p")
+&nbsp;
+print("\n\n\nText:")
+&nbsp;
+for div in divs:
+    print(div.text)
+&nbsp;
+print("\n\n\nAlign:")
+&nbsp;
+for div in divs:
+    print(div.get("align"))
+</pre>
+
+
+
+<p><a name="k18"></a></p>
+<h2 id="k18">18. Získávání informací z&nbsp;HTML stránek zajímavější cestou: knihovna Beautiful Soup</h2>
+
+<p>Pokud budete potřebovat vytvořit aplikaci získávající data ze složitěji
+strukturovaných HTML stránek, může být lepší namísto dnes popisované knihovny
+<strong>lxml</strong> použít další zajímavou a užitečnou knihovnu nazvanou <a
+href="https://www.crummy.com/software/BeautifulSoup/">Beautiful Soup</a>.
+S&nbsp;možnostmi nabízenými touto knihovnou se seznámíme v&nbsp;samostatném
+článku, v&nbsp;němž si samozřejmě ukážeme i různé příklady (tentokrát již
+převzaté z&nbsp;praxe).</p>
+
+
+
+<p><a name="k19"></a></p>
+<h2 id="k19">19. Repositář s&nbsp;demonstračními příklady</h2>
+
+<p>Všechny dnes popisované demonstrační příklady byly uloženy do Git
+repositáře, který je dostupný na adrese <a
+href="https://github.com/tisnik/lxml-examples">https://github.com/tisnik/lxml-examples</a>.
+Příklady si můžete v&nbsp;případě potřeby stáhnout i jednotlivě bez nutnosti
+klonovat celý repositář:</p>
+
+<table>
+<tr><th> #</th><th>Příklad</th><th>Popis</th><th>Odkaz</th></tr>
+<tr><td> 1</td><td>elementtree1.py</td><td>použití objektů Element a SubElement</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/elementtree1.py">https://github.com/tisnik/lxml-examples/blob/master/elementtree1.py</a></td></tr>
+<tr><td> 2</td><td>elementtree2.py</td><td>nastavení textu u elementů/prvků</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/elementtree2.py">https://github.com/tisnik/lxml-examples/blob/master/elementtree2.py</a></td></tr>
+<tr><td> 3</td><td>elementtree3.py</td><td>texty s&nbsp;koncem řádku a speciálními znaky</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/elementtree3.py">https://github.com/tisnik/lxml-examples/blob/master/elementtree3.py</a></td></tr>
+<tr><td> 4</td><td>elementtree4.py</td><td>tvorba XML tvořeného stromem se třemi úrovněmi</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/elementtree4.py">https://github.com/tisnik/lxml-examples/blob/master/elementtree4.py</a></td></tr>
+<tr><td> 5</td><td>elementtree5.py</td><td>elementy obsahující atributy</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/elementtree5.py">https://github.com/tisnik/lxml-examples/blob/master/elementtree5.py</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 6</td><td>parsing1.py</td><td>základ parseru XML</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing1.py">https://github.com/tisnik/lxml-examples/blob/master/parsing1.py</a></td></tr>
+<tr><td> 7</td><td>parsing2.py</td><td>výpis všech potomků kořenového uzlu</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing2.py">https://github.com/tisnik/lxml-examples/blob/master/parsing2.py</a></td></tr>
+<tr><td> 8</td><td>parsing3.py</td><td>využití <strong>xpath</strong></td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing3.py">https://github.com/tisnik/lxml-examples/blob/master/parsing3.py</a></td></tr>
+<tr><td> 9</td><td>parsing4.py</td><td>využití <strong>xpath</strong></td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing4.py">https://github.com/tisnik/lxml-examples/blob/master/parsing4.py</a></td></tr>
+<tr><td>10</td><td>parsing5.py</td><td>relativní cesta</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing5.py">https://github.com/tisnik/lxml-examples/blob/master/parsing5.py</a></td></tr>
+<tr><td>11</td><td>parsing6.py</td><td>čtení textu elementů přes cestu</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing6.py">https://github.com/tisnik/lxml-examples/blob/master/parsing6.py</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>12</td><td>get_path.py</td><td>získání cesty k&nbsp;vybranému elementu (elementům)</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/get_path.py">https://github.com/tisnik/lxml-examples/blob/master/get_path.py</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>13</td><td>parsing_html.py</td><td>parsing HTML stránky</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/parsing_html.py">https://github.com/tisnik/lxml-examples/blob/master/parsing_html.py</a></td></tr>
+</table>
+
+<p><div class="rs-tip-major">Poznámka: v&nbsp;repositáři jsou uloženy i
+výsledky běhu jednotlivých příkladů, tj.&nbsp;vytvořené XML soubory
+popř.&nbsp;naopak výsledek jejich parsování.</div></p>
+
+
+
+<p><a name="k20"></a></p>
+<h2 id="k20">20. Odkazy na Internetu</h2>
+
+<ol>
+
+<li>lxml - XML and HTML with Python<br />
+<a href="https://lxml.de/index.html">https://lxml.de/index.html</a>
+</li>
+
+<li>lxml na PyPi<br />
+<a href="https://pypi.org/project/lxml/">https://pypi.org/project/lxml/</a>
+</li>
+
+<li>ElementTree and lxml<br />
+<a href="https://wiki.python.org/moin/Tutorials%20on%20XML%20processing%20with%20Python">https://wiki.python.org/moin/Tutorials%20on%20XML%20processing%20with%20Python</a>
+</li>
+
+<li>ElementTree Overview<br />
+<a href="http://effbot.org/zone/element-index.htm">http://effbot.org/zone/element-index.htm</a>
+</li>
+
+<li>Elements and Element Trees<br />
+<a href="http://effbot.org/zone/element.htm">http://effbot.org/zone/element.htm</a>
+</li>
+
+<li>Python XML processing with lxml<br />
+<a href="http://infohost.nmt.edu/tcc/help/pubs/pylxml/web/index.html">http://infohost.nmt.edu/tcc/help/pubs/pylxml/web/index.html</a>
+</li>
+
+<li>Dive into Python 3: XML<br />
+<a href="http://www.diveintopython3.net/xml.html">http://www.diveintopython3.net/xml.html</a>
+</li>
+
+<li>Programovací jazyk Clojure – základy zpracování XML<br />
+<a href="https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/">https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/</a>
+</li>
+
+<li>xml-zip<br />
+<a href="http://clojuredocs.org/clojure.zip/xml-zip">http://clojuredocs.org/clojure.zip/xml-zip</a>
+</li>
+
+<li>xml-seq<br />
+<a href="http://clojuredocs.org/clojure.core/xml-seq">http://clojuredocs.org/clojure.core/xml-seq</a>
+</li>
+
+<li>Parsing XML in Clojure<br />
+<a href="https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/">https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/</a>
+</li>
+
+<li>Tree structure<br />
+<a href="https://en.wikipedia.org/wiki/Tree_structure">https://en.wikipedia.org/wiki/Tree_structure</a>
+</li>
+
+<li>Strom (datová struktura)<br />
+<a href="https://cs.wikipedia.org/wiki/Strom_(datov%C3%A1_struktura)">https://cs.wikipedia.org/wiki/Strom_(datov%C3%A1_struktura)</a>
+</li>
+
+<li>Element Library Functions<br />
+<a href="http://effbot.org/zone/element-lib.htm#prettyprint">http://effbot.org/zone/element-lib.htm#prettyprint</a>
+</li>
+
+<li>The XML C parser and toolkit of Gnome<br />
+<a href="http://xmlsoft.org/">http://xmlsoft.org/</a>
+</li>
+
+<li>XML Tutorial na zvon.org<br />
+<a href="http://www.zvon.org/comp/r/tut-XML.html">http://www.zvon.org/comp/r/tut-XML.html</a>
+</li>
+
+<li>Extensible Markup Language (XML) 1.0 (Fifth Edition)<br />
+<a href="https://www.w3.org/TR/REC-xml/">https://www.w3.org/TR/REC-xml/</a>
+</li>
+
+<li>XML Processing Modules (pro Python)<br />
+<a href="https://docs.python.org/3/library/xml.html">https://docs.python.org/3/library/xml.html</a>
+</li>
+
+<li>Užitečné knihovny a moduly pro Python: knihovna Requests<br />
+<a href="https://mojefedora.cz/uzitecne-knihovny-pro-python-requests-1/">https://mojefedora.cz/uzitecne-knihovny-pro-python-requests-1/</a>
+</li>
+
+<li>Užitečné knihovny a moduly pro Python: další možnosti nabízené knihovnou Requests<br />
+<a href="https://mojefedora.cz/uzitecne-knihovny-a-moduly-pro-python-dalsi-moznosti-nabizene-knihovnou-requests/">https://mojefedora.cz/uzitecne-knihovny-a-moduly-pro-python-dalsi-moznosti-nabizene-knihovnou-requests/</a>
+</li>
+
+<li>Extensible Markup Language<br />
+<a href="https://en.wikipedia.org/wiki/XML">https://en.wikipedia.org/wiki/XML</a>
+</li>
+
+<li>Extensible Markup Language<br />
+<a href="https://cs.wikipedia.org/wiki/Extensible_Markup_Language">https://cs.wikipedia.org/wiki/Extensible_Markup_Language</a>
+</li>
+
+<li>Slabikář XML – odkazy<br />
+<a href="https://www.interval.cz/clanky/slabikar-xml-odkazy/">https://www.interval.cz/clanky/slabikar-xml-odkazy/</a>
+</li>
+
+<li>XML editors<br />
+<a href="http://www.xml-dev.com/">http://www.xml-dev.com/</a>
+</li>
+
+<li>lxml FAQ - Frequently Asked Questions<br />
+<a href="https://lxml.de/FAQ.html">https://lxml.de/FAQ.html</a>
+</li>
+
+<li>XML pro začátečníky - 1. část<br />
+<a href="http://programujte.com/clanek/2007030501-xml-pro-zacatecniky-1-cast/">http://programujte.com/clanek/2007030501-xml-pro-zacatecniky-1-cast/</a>
+</li>
+
+<li>XML pro web aneb od teorie k praxi, 2.díl<br />
+<a href="https://www.zive.cz/clanky/xml-pro-web-aneb-od-teorie-k-praxi-2dil/sc-3-a-109709/default.aspx">https://www.zive.cz/clanky/xml-pro-web-aneb-od-teorie-k-praxi-2dil/sc-3-a-109709/default.aspx</a>
+</li>
+
+<li>XML Schema<br />
+<a href="https://cs.wikipedia.org/wiki/XML_Schema">https://cs.wikipedia.org/wiki/XML_Schema</a>
+</li>
+
+<li>Meaning of - &lt;?xml version=“1.0” encoding=“utf-8”?&gt;<br />
+<a href="https://stackoverflow.com/questions/13743250/meaning-of-xml-version-1-0-encoding-utf-8#27398439">https://stackoverflow.com/questions/13743250/meaning-of-xml-version-1-0-encoding-utf-8#27398439</a>
+</li>
+
+<li>Beautiful Soup<br />
+<a href="https://www.crummy.com/software/BeautifulSoup/">https://www.crummy.com/software/BeautifulSoup/</a>
+</li>
+
+</ol>
+
+
+
+<p></p><p></p>
+<p><small>Autor: <a href="http://www.fit.vutbr.cz/~tisnovpa">Pavel Tišnovský</a> &nbsp; 2018</small></p>
+</body>
+</html>
+
