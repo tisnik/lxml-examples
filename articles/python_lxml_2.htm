@@ -1,0 +1,1429 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>Zpracování XML a HTML v Pythonu s využitím knihoven lxml a Beautiful Soup</title>
+<meta name="Author" content="Pavel Tisnovsky" />
+<meta name="Generator" content="vim" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<style type="text/css">
+         body {color:#000000; background:#ffffff;}
+         h1  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#c00000; text-align:center; padding-left:1em}
+         h2  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#0000c0; padding-left:1em; text-align:left}
+         h3  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#c0c0c0; padding-left:1em; text-align:left}
+         h4  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#e0e0e0; padding-left:1em; text-align:left}
+         a   {font-family: arial, helvetica, sans-serif;}
+         li  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ol  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ul  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         p   {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify;}
+         pre {background:#e0e0e0}
+</style>
+</head>
+
+<body>
+
+<h1>Zpracování XML a HTML v Pythonu s využitím knihoven lxml a Beautiful Soup</h1>
+
+<h3>Pavel Tišnovský</h3>
+
+<p></p>
+
+<h1>Úvodník</h1>
+
+<p>V dnešním článku si nejprve ukážeme některé další možnosti nabízené knihovnou lxml, která je určena pro načítání, modifikaci i ukládání souborů ve formátech XML a HTML. Ve druhé části článku se seznámíme s další užitečnou knihovnou s poměrně záhadným názvem Beautiful Soup.</p>
+
+
+
+<h2>Obsah</h2>
+
+<p><a href="#k01">1. Zpracování XML a HTML v&nbsp;Pythonu s&nbsp;využitím knihoven lxml a Beautiful Soup</a></p>
+<p><a href="#k02">2. Soubory POM (Project Object Model)</a></p>
+<p><a href="#k03">3. První demonstrační příklad &ndash; načtení XML souboru <strong>pom.xml</strong></a></p>
+<p><a href="#k04">4. Použití <strong>XPath</strong> při přístupu ke konkrétnímu uzlu</a></p>
+<p><a href="#k05">5. Získání a výpis informací o modulech, na nichž závisí projekt</a></p>
+<p><a href="#k06">6. Podmínky použité při výběru uzlů pomocí cesty</a></p>
+<p><a href="#k07">7. Porovnání hodnoty uzlu s&nbsp;textovým řetězcem</a></p>
+<p><a href="#k08">8. Složitější cesta s&nbsp;relativní částí</a></p>
+<p><a href="#k09">9. Knihovna Beautiful Soup</a></p>
+<p><a href="#k10">10. Získání základních informací z&nbsp;HTML stránky</a></p>
+<p><a href="#k11">11. Zjednodušení předchozího příkladu pomocí tečkového operátoru</a></p>
+<p><a href="#k12">12. Nalezení všech značek &lt;title&gt; a výpis jejich obsahu</a></p>
+<p><a href="#k13">13. Výpis všech odkazů ve značkách &lt;a&gt;</a></p>
+<p><a href="#k14">14. Složitější příklad &ndash; získání klíčových slov přiřazených k&nbsp;balíčkům</a></p>
+<p><a href="#k15">15. Další zpracování klíčových slov přiřazených k&nbsp;balíčkům</a></p>
+<p><a href="#k16">16. Získání tučného textu z&nbsp;HTML stránky</a></p>
+<p><a href="#k17">17. Přečtení obsahu tabulek z&nbsp;HTML stránky</a></p>
+<p><a href="#k18">18. Úplný zdrojový kód předchozího demonstračního příkladu</a></p>
+<p><a href="#k19">19. Repositář s&nbsp;demonstračními příklady</a></p>
+<p><a href="#k20">20. Odkazy na Internetu</a></p>
+
+
+
+<p><a name="k01"></a></p>
+<h2 id="k01">1. Zpracování XML a HTML v&nbsp;Pythonu s&nbsp;využitím knihoven lxml a Beautiful Soup</h2>
+
+<p><a
+href="https://www.root.cz/clanky/zpracovani-xml-v-pythonu-s-vyuzitim-knihovny-lxml/">V&nbsp;úvodním
+článku o knihovně <strong>xml</strong></a> jsme se seznámili se základními
+koncepty, na nichž je tato užitečná knihovna postavena. Připomeňme si, že pro
+reprezentaci dokumentu načítaného či ukládaného do XML jsou použity objekty
+typu <strong>Element</strong> a <strong>ElementTree</strong>. Objekt typu
+<strong>Element</strong> je možné považovat za datovou strukturu, jejíž
+základní vlastnosti jsou převzaté z&nbsp;klasických seznamů a současně i
+slovníků. Instance třídy <strong>Element</strong> představuje jeden uzel
+vytvářeného či naparsovaného stromu dokumentu a může obsahovat celou řadu
+vlastností (properties), zejména pak samotnou značku, atributy, text (hodnotu
+umístěnou ve značce) a získat lze i reference na všechny přímé potomky uzlu.
+Naproti tomu třída <strong>ElementTree</strong> celý strom
+&bdquo;obaluje&ldquo; a nabízí uživatelům další užitečné metody pro hledání
+uzlů, zápis stromu do XML apod.</p>
+
+<p>Taktéž jsme si řekli základní informace o použití technologie
+<strong>XPath</strong> při vyhledávání uzlů na základě nějakých kritérií. Na
+tuto zajímavou část v&nbsp;dnešním článku částečně navážeme, protože si ukážeme
+některé další možnosti, které nám knihovna <strong>lxml</strong> v&nbsp;této
+oblasti nabízí.</p>
+
+<p>Ovšem použití knihovny <strong>lxml</strong> nemusí být vždy to nejlepší
+řešení, i když zde nalezneme například specializovaný parser nazvaný příznačně
+<strong>HTMLParser</strong>.  V&nbsp;případě, že je zapotřebí získávat
+informace z&nbsp;HTML stránek (<a
+href="https://en.wikipedia.org/wiki/Web_scraping">web scraping</a>), může být
+výhodnější použít knihovnu specializovanou právě na tuto oblast. Jednou
+z&nbsp;dostupných a často používaných knihoven pro web scraping a podobné
+činnosti je knihovna s&nbsp;poněkud záhadným názvem <strong>Beautiful
+Soup</strong>. I s&nbsp;některými možnostmi nabízenými touto knihovnou se dnes
+alespoň ve stručnosti seznámíme.</p>
+
+
+
+<p><a name="k02"></a></p>
+<h2 id="k02">2. Soubory POM (Project Object Model)</h2>
+
+<p>Zejména vývojáři pracující s&nbsp;programovacím jazykem Java a systémem
+Maven se určitě již mnohokrát setkali se soubory nazvanými
+<strong>pom.xml</strong>. Jen ve stručnosti si řekněme, že tyto soubory
+obsahují informace o projektu a samozřejmě i konfiguraci celého projektu,
+popř.&nbsp;další informace používané některými Maven pluginy. Tyto soubory jsou
+primárně využívané nástrojem <i>Apache Maven</i>, přičemž zkratka <i>POM</i>
+znamená <i>Project Object Model</i>. Ve skutečnosti ovšem s&nbsp;těmito soubory
+pracuje i mnoho dalších nástrojů, ať již se jedná o integrovaná vývojová
+prostředí či o specializovanější nástroje určené pro kontrolu závislých
+knihoven, licencí použitých v&nbsp;knihovnách atd. atd.</p>
+
+<p>Velmi jednoduchý soubor <strong>pom.xml</strong> může vypadat například
+následovně:</p>
+
+<pre>
+&lt;project&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;org.tisnik.uberproject.test&lt;/groupId&gt;
+  &lt;artifactId&gt;test-app-junit-dependency&lt;/artifactId&gt;
+  &lt;version&gt;1.0&lt;/version&gt;
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;junit&lt;/groupId&gt;
+      &lt;artifactId&gt;junit&lt;/artifactId&gt;
+      &lt;version&gt;3.8.1&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;foo&lt;/groupId&gt;
+      &lt;artifactId&gt;foo&lt;/artifactId&gt;
+      &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;bar&lt;/groupId&gt;
+      &lt;artifactId&gt;bar&lt;/artifactId&gt;
+      &lt;version&gt;1.2.3&lt;/version&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: tento soubor, který budeme používat
+v&nbsp;demonstračních příkladech, naleznete na GitHubu, konkrétně na adrese <a
+href="https://github.com/tisnik/lxml-examples/blob/master/pom.xml">https://github.com/tisnik/lxml-examples/blob/master/pom.xml</a>.</div></p>
+
+
+
+<p><a name="k03"></a></p>
+<h2 id="k03">3. První demonstrační příklad &ndash; načtení XML souboru <strong>pom.xml</strong></h2>
+
+<p>Vzhledem k&nbsp;tomu, že soubory <strong>pom.xml</strong> jsou klasickými
+XML soubory, můžeme pro jejich načtení a parsing použít funkci
+<strong>lxml.etree.parse()</strong>, s&nbsp;níž jsme se již seznámili minule.
+Této funkci předáme jméno souboru.  V&nbsp;případě, že se dokument podaří
+načíst (a to by neměl být problém, samozřejmě za předpokladu, že pom.xml nebyl
+nějak poškozen), lze získat kořenový uzel, rekurzivně vytisknout jeho obsah
+(tedy celý strom), přečíst přímé potomky kořenového uzlu a následně vypsat
+(například) jejich značky:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+print(ET.tostring(root))
+print()
+&nbsp;
+children = root.getchildren()
+&nbsp;
+for child in children:
+    print(child.tag)
+</pre>
+
+<p>Výsledek by pro náš <strong>pom.xml</strong> měl vypadat následovně. První
+část s&nbsp;rekurzivním výpisem celého stromu není příliš čitelná, ovšem to
+nevadí, protože vždy můžeme použít <i>pretty printing</i>:</p>
+
+<pre>
+b'&lt;project&gt;\n  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;\n
+&lt;groupId&gt;org.tisnik.uberproject.test&lt;/groupId&gt;\n
+&lt;artifactId&gt;test-app-junit-dependency&lt;/artifactId&gt;\n
+&lt;version&gt;1.0&lt;/version&gt;\n  &lt;dependencies&gt;\n
+&lt;dependency&gt;\n      &lt;groupId&gt;junit&lt;/groupId&gt;\n
+&lt;artifactId&gt;junit&lt;/artifactId&gt;\n
+&lt;version&gt;3.8.1&lt;/version&gt;\n    &lt;/dependency&gt;\n
+&lt;dependency&gt;\n      &lt;groupId&gt;foo&lt;/groupId&gt;\n
+&lt;artifactId&gt;foo&lt;/artifactId&gt;\n
+&lt;version&gt;1.0.0&lt;/version&gt;\n    &lt;/dependency&gt;\n
+&lt;dependency&gt;\n      &lt;groupId&gt;bar&lt;/groupId&gt;\n
+&lt;artifactId&gt;bar&lt;/artifactId&gt;\n
+&lt;version&gt;1.2.3&lt;/version&gt;\n    &lt;/dependency&gt;\n
+&lt;/dependencies&gt;\n&lt;/project&gt;'
+&nbsp;
+modelVersion
+groupId
+artifactId
+version
+dependencies
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: na tomto místě je nutné poznamenat, že
+struktura souborů <strong>pom.xml</strong> není tak rigidní a jednoduchá, jak
+by se z&nbsp;předchozího demonstračního příkladu mohlo zdát. V&nbsp;praxi tedy
+bude zpracování XML nepatrně složitější. Ostatně se stačí podívat na
+&bdquo;Super POM&ldquo;, jehož úplný výpis naleznete na adrese <a
+href="https://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Super_POM">https://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Super_POM</a>.
+Nicméně pro účely ukázky možností knihovny <strong>lxml</strong> nám bude
+postačovat jednodušší příklad.</div></p>
+
+
+
+<p><a name="k04"></a></p>
+<h2 id="k04">4. Použití <strong>XPath</strong> při přístupu ke konkrétnímu uzlu</h2>
+
+<p>Pro přístup ke konkrétnímu uzlu se většinou využívá technologie pojmenovaná
+<strong>XPath</strong>, s&nbsp;jejímiž základy jsme se seznámili minule.
+Podívejme se nyní na příklad použití xpathu v&nbsp;případě, že potřebujeme
+získat základní informace o projektu popsaného v&nbsp;souboru
+<strong>pom.xml</strong>. Mezi základní informace patří mj.&nbsp;i
+<i>artifactId</i>, <i>groupId</i> a <i>version</i>, přesněji řečeno obsah
+těchto tří uzlů (nikoli ovšem jejich atributy). Příslušné (absolutní) cesty
+budou vypadat takto:</p>
+
+<pre>
+/project/artifactId/text()
+/project/groupId/text()
+/project/version/text()
+</pre>
+
+<p>Připomeňme si, že pomocí &bdquo;text()&ldquo; dokážeme přečíst textovou
+hodnotu zapsanou v&nbsp;uzlu/elementu.</p>
+
+<p>Následuje výpis úplného zdrojového kódu demonstračního příkladu, který tyto
+cesty používá pro získání informací o projektu. Díky poměrně velké jistotě, že
+se tyto informace budou v&nbsp;<strong>pom.xml</strong> nacházet, použijeme
+přístup k&nbsp;prvnímu prvku vráceného seznamu přímo s&nbsp;využitím
+indexu:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+artifact_id = tree.xpath(<strong>"/project/artifactId/text()"</strong>)[0]
+print("artifact ID: {aid}".format(aid=artifact_id))
+&nbsp;
+group_id = tree.xpath(<strong>"/project/groupId/text()"</strong>)[0]
+print("Group ID: {gid}".format(gid=group_id))
+&nbsp;
+version = tree.xpath(<strong>"/project/version/text()"</strong>)[0]
+print("Version: {v}".format(v=version))
+</pre>
+
+<p>Výsledek by měl na standardním výstupu vypadat následovně:</p>
+
+<pre>
+Artifact ID: test-app-junit-dependency
+Group ID: org.tisnik.uberproject.test
+Version: 1.0
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: bližší informace o základních
+vlastnostech projektu získáte například na stránce <a
+href="http://maven.apache.org/guides/mini/guide-naming-conventions.html">Guide
+to naming conventions on groupId, artifactId, and version</a>.</div></p>
+
+
+
+<p><a name="k05"></a></p>
+<h2 id="k05">5. Získání a výpis informací o modulech, na nichž závisí projekt</h2>
+
+<p>Ve chvíli, kdy budeme potřebovat z&nbsp;našeho projektového souboru
+uloženého ve formátu XML získat všechny moduly, na nichž projekt přímo závisí,
+můžeme použít cestu (<i>xpath</i>), která bude vybírat všechny uzly nazvané
+&bdquo;dependency&ldquo;, které se nachází v&nbsp;poduzlu
+&bdquo;dependencies&ldquo;. Prozatím použijeme jednoduchou absolutní cestu,
+která bude vypadat následovně:</p>
+
+<pre>
+/project/dependencies/dependency
+</pre>
+
+<p>Pro každý nalezený uzel (či lépe řečeno element) pak přečteme text
+z&nbsp;poduzlu nazvaného &bdquo;groupId&ldquo;, a to opět s&nbsp;využitím cesty:</p>
+
+<pre>
+for dependency in dependencies:
+    print(dependency.xpath(<strong>"groupId/text()"</strong>)[0])
+</pre>
+
+<p>Úplný kód demonstračního příkladu, který tuto činnost provádí, vypadá
+následovně:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependencies = tree.xpath(<strong>"/project/dependencies/dependency"</strong>)
+&nbsp;
+for dependency in dependencies:
+    print(dependency.xpath(<strong>"groupId/text()"</strong>)[0])
+</pre>
+
+<p>Výsledek:</p>
+
+<pre>
+junit
+foo
+bar
+</pre>
+
+<p>Výše uvedený postup není příliš rychlý (spíše naopak), ovšem ve skutečnosti
+můžeme celý problém uspokojivě vyřešit i jiným způsobem, například cestou přímo
+vracející hodnoty všech poduzlů &bdquo;groupId&ldquo; nalezených na všech
+cestách odpovídajících &bdquo;/project/dependencies/dependency/&ldquo;.
+Upravený příklad, který by měl být rychlejší, vypadá následovně:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependency_ids = tree.xpath(<strong>"/project/dependencies/dependency/groupId/text()"</strong>)
+&nbsp;
+for dependency_id in dependency_ids:
+    print(dependency_id)
+</pre>
+
+<p>Výsledek by měl být totožný:</p>
+
+<pre>
+junit
+foo
+bar
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: zde ušetříme především několik
+konstrukcí cesty, protože se interně může jednat o poměrně složitý objekt. U
+třech závislostí sice nebude rozdíl patrný, ale u velkých XML se stovkami či
+tisícovkami uzlů již může být rozdíl markantní.</div></p>
+
+
+
+<p><a name="k06"></a></p>
+<h2 id="k06">6. Podmínky použité při výběru uzlů pomocí cesty</h2>
+
+<p>Při specifikaci cesty je dokonce možné používat i podmínky, v&nbsp;nichž se
+například testuje hodnota atributů, hodnota uložená v&nbsp;uzlu atd. Před
+vysvětlením základních podmínek si ukažme příklad, který budeme postupně
+upravovat. V&nbsp;tomto příkladu se používá cesta, která získá hodnoty všech
+uzlů &bdquo;groupId&ldquo; (ty se ovšem mohou v&nbsp;dokumentu nacházet na více
+místech, což jsme již ostatně mohli vidět):</p>
+
+<pre>
+//groupId/text()
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: zápis dvou lomítek na začátek cesty
+znamená, že se vyberou všechny uzly &bdquo;groupId&ldquo; nezávisle na tom, ve
+které části stromu se nachází. Odlišný význam mají dvě lomítka použitá uvnitř
+cesty.</div></p>
+
+<p>Získání a výpis hodnoty všech uzlů &bdquo;groupId&ldquo; vypadá takto:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependency_ids = tree.xpath(<strong>"//groupId/text()"</strong>)
+&nbsp;
+for dependency_id in dependency_ids:
+    print(dependency_id)
+</pre>
+
+<p>Výsledkem budou čtyři řádky, protože se tento uzel nachází jak v&nbsp;popisu
+vlastního projektu, tak i u všech závislostí (<i>dependency</i>):</p>
+
+<pre>
+org.tisnik.uberproject.test
+junit
+foo
+bar
+</pre>
+
+
+
+<p><a name="k07"></a></p>
+<h2 id="k07">7. Porovnání hodnoty uzlu s&nbsp;textovým řetězcem</h2>
+
+<p>Nyní se nalezené uzly pokusíme omezit pouze na ty, v&nbsp;nichž má
+&bdquo;groupId&ldquo; hodnotu &bdquo;junit&ldquo;. Podmínky se zapisují do
+hranatých závorek, vlastní text uzlu lze zkrátit na tečku a pro porovnávání se
+používá jen jediný znak = (na to je zapotřebí si dát pozor, protože dvě ==
+povedou k&nbsp;chybě):</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependency_ids = tree.xpath(<strong>'//groupId[.="junit"]/text()'</strong>)
+&nbsp;
+for dependency_id in dependency_ids:
+    print(dependency_id)
+</pre>
+
+<p>Nyní již získáme pouze jediný výsledek:</p>
+
+<pre>
+junit
+</pre>
+
+<p>Podobně můžeme postupovat i v&nbsp;případě, že budeme chtít omezit množinu
+uzlů pro testování pouze na informace o závislostech:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependency_ids = tree.xpath('/project/dependencies/dependency/groupId[.="junit"]/text()')
+&nbsp;
+for dependency_id in dependency_ids:
+    print(dependency_id)
+</pre>
+
+<p>Jen pro jistotu &ndash; dostaneme naprosto stejný výsledek:</p>
+
+<pre>
+junit
+</pre>
+
+
+
+<p><a name="k08"></a></p>
+<h2 id="k08">8. Složitější cesta s&nbsp;relativní částí</h2>
+
+<p>V&nbsp;zápisu cesty je možné použít i dvojici teček (..) pro přesun do jiné
+části stromu. Tato část je umístěna relativně k&nbsp;uzlu, který byl aplikací
+cesty nalezen. Vlastně se nejedná o nic složitého, protože podobný styl zápisu
+používáme i pro přístup k&nbsp;souborům umístěným relativně
+k&nbsp;<strong>pwd</strong>. V&nbsp;případě, že budeme například chtít nalézt
+závislost s&nbsp;groupId nastavenou na &bdquo;junit&ldquo; a následně vypsat
+verzi takto nalezené knihovny, může cesta vypadat takto:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependency_ids = tree.xpath('/project/dependencies/dependency/groupId[.="junit"]/../version/text()')
+&nbsp;
+for dependency_id in dependency_ids:
+    print(dependency_id)
+</pre>
+
+<p>Výsledkem bude verze 3.8.1:</p>
+
+<pre>
+3.8.1
+</pre>
+
+<p>Jen pro doplnění si uveďme, že zápis ./ v&nbsp;cestě znamená &bdquo;tentýž
+element&ldquo; a tudíž nebude mít vliv na to, jaké elementy budou vybrány
+popř.&nbsp;jak se bude vyhodnocovat podmínka. Ostatně si to můžete vyzkoušet
+sami na nepatrně upraveném příkladu se zbytečně komplikovaným zápisem
+cesty:</p>
+
+<pre>
+import lxml.etree as ET
+&nbsp;
+xml = "pom.xml"
+tree = ET.parse(xml)
+&nbsp;
+root = tree.getroot()
+&nbsp;
+dependency_ids = tree.xpath('/project/./././dependencies/dependency/groupId[.="junit"]/.././././version/text()')
+&nbsp;
+for dependency_id in dependency_ids:
+    print(dependency_id)
+</pre>
+
+
+
+<p><a name="k09"></a></p>
+<h2 id="k09">9. Knihovna Beautiful Soup</h2>
+
+<p>Ve druhé části článku se ve stručnosti seznámíme se základními koncepty, na
+nichž je postavena knihovna nazvaná <i>Beautiful Soup</i>. Název této knihovny
+je převzatý ze slavné knihy Alenka v&nbsp;kraji divů (<i>div</i> ovšem nemá nic
+společného s&nbsp;HTML div-y :-). Tato knihovna dokáže v&nbsp;případě potřeby
+pracovat s&nbsp;nevalidními soubory XML a samozřejmě i s&nbsp;nevalidními HTML
+stránkami. Právě v&nbsp;tom ostatně spočívá užitečnost knihovny, protože mnoho
+HTML stránek (možná většinu?) není možné zpracovávat jako validní XML. Ve
+skutečnosti dokáže tato knihovna při zpracování HTML a XML používat větší
+množství parserů, které se od sebe liší rychlostí (či pomalostí) a samozřejmě i
+svými schopnostmi. Jedná se o tyto parsery:</p>
+
+<table>
+<tr><th>Parser</th><th>Stručný popis</th></tr>
+<tr><td>"html.parser"</td><td>používá parser dodávaný společně s&nbsp;Pythonem</td></tr>
+<tr><td>"lxml"</td><td>parser HTML převzatý z&nbsp;výše popisované knihovny <strong>lxml</strong></td></tr>
+<tr><td>"lxml-xml"</td><td>parser XML převzatý z&nbsp;výše popisované knihovny <strong>lxml</strong></td></tr>
+<tr><td>"html5lib"</td><td>určený pro parsing nevalidních HTML stránek</td></tr>
+</table>
+
+<p><div class="rs-tip-major">Poznámka: kromě prvního parseru je nutné všechny
+další parsery nainstalovat, a to buď lokálně (pro právě aktivního uživatele)
+nebo globálně pro všechny uživatele systému.</div></p>
+
+
+
+<p><a name="k10"></a></p>
+<h2 id="k10">10. Získání základních informací z&nbsp;HTML stránky</h2>
+
+<p>Podívejme se nyní na velmi jednoduchý příklad použití knihovny <i>Beautiful
+Soup</i>. Pokusíme se v&nbsp;něm získat titulek ze stránky umístěné na adrese
+&bdquo;https://www.root.cz&ldquo;. Vzhledem k&nbsp;tomu, že standardní moduly
+Pythonu mají problémy s&nbsp;protokolem HTTPS, použijeme pro načtení stránky
+známou knihovnu <a
+href="https://mojefedora.cz/uzitecne-knihovny-pro-python-requests-1/">requests</a>.
+Po načtení již můžeme stránku naparsovat, získat první značku
+<strong>title</strong> a vypsat její obsah:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+&nbsp;
+response = requests.get("https://www.root.cz")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "html.parser")
+&nbsp;
+print(soup.find("title"))
+print(soup.find("title").text)
+</pre>
+
+<p>V&nbsp;tomto případě jsme použili standardní parser
+&bdquo;html.parser&ldquo; a pro získání první značky metodu
+<strong>find</strong>. Výsledek:</p>
+
+<pre>
+&lt;title&gt;Root.cz - informace nejen ze světa Linuxu&lt;/title&gt;
+Root.cz - informace nejen ze světa Linuxu
+</pre>
+
+
+
+<p><a name="k11"></a></p>
+<h2 id="k11">11. Zjednodušení předchozího příkladu pomocí tečkového operátoru</h2>
+
+<p>Předchozí příklad je samozřejmě možné různými způsoby vylepšit, například
+použitím tečkového operátoru, který zjednodušuje přístup ke značkám a jejich
+obsahu. Ostatně se o tom můžete přesvědčit sami, zejména po přečtení posledních
+dvou příkazů v&nbsp;tomto programu:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+&nbsp;
+response = requests.get("https://www.root.cz")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text,"html.parser");
+print(soup.title)
+print(soup.title.text)
+</pre>
+
+<p>Výsledek bude stejný, jako tomu bylo v&nbsp;předchozím příkladu:</p>
+
+<pre>
+&lt;title&gt;Root.cz - informace nejen ze světa Linuxu&lt;/title&gt;
+Root.cz - informace nejen ze světa Linuxu
+</pre>
+
+
+
+<p><a name="k12"></a></p>
+<h2 id="k12">12. Nalezení všech značek &lt;title&gt; a výpis jejich obsahu</h2>
+
+<p>Stránka Roota ve skutečnosti obsahuje větší množství značek &lt;title&gt;.
+Je tomu tak z&nbsp;toho prostého důvodu, že přímo do stránky je vloženo několik
+souborů typu <a
+href="https://www.root.cz/clanky/vektorovy-graficky-format-svg/">SVG</a>. Pokud
+budeme chtít vyhledat všechny tyto značky, je zapotřebí namísto metody
+<strong>BeautifulSoup.find()</strong> použít metodu
+<strong>BeautifulSoup.find_all()</strong>. Opět se samozřejmě podíváme na
+demonstrační příklad:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+&nbsp;
+response = requests.get("https://www.root.cz")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "html.parser")
+&nbsp;
+for anchor in soup.find_all("title"):
+    print(anchor.text)
+</pre>
+
+<p>S&nbsp;výsledky:</p>
+
+<pre>
+Root.cz - informace nejen ze světa Linuxu
+Root.cz
+Root.cz
+Root.cz
+Vitalia.cz
+Vitalia.cz
+Vitalia.cz
+Lupa.cz
+Lupa.cz
+Podnikatel.cz
+Podnikatel.cz
+Podnikatel.cz
+Vitalia.cz
+Root.cz
+Mesec.cz
+Root.cz
+Lupa.cz
+Mesec.cz
+Vitalia.cz
+Root.cz
+Podnikatel.cz
+Vitalia.cz
+</pre>
+
+
+
+<p><a name="k13"></a></p>
+<h2 id="k13">13. Výpis všech odkazů ve značkách &lt;a&gt;</h2>
+
+<p>Podobným způsobem můžeme zpracovat stránku <a
+href="https://pypi.python.org/simple/">https://pypi.python.org/simple/</a>
+(pozor: je velmi rozsáhlá!) a získat z&nbsp;ní odkazy na všechny balíčky
+dostupné v&nbsp;repositáři PyPi. Pro zajímavost se pokusíme použít parser
+&bdquo;lxml&ldquo; pro zpracování HTML stránek dodávaný právě knihovnou
+<strong>lxml</strong>:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+&nbsp;
+response = requests.get("https://pypi.python.org/simple/")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "lxml")
+&nbsp;
+for a in soup.find_all("a"):
+    print(a.text)
+</pre>
+
+<p>Výsledkem by měl být seznam zhruba 15000 abecedně seřazených balíčků:</p>
+
+<pre>
+0
+0-._.-._.-._.-._.-._.-._.-0
+0.0.1
+00SMALINUX
+01changer
+021
+02exercicio
+0805nexter
+0-core-client
+0FELA
+0-orchestrator
+0wdg9nbmpm
+0wned
+0x
+0x10c-asm
+1
+100bot
+1020-nester
+10daysweb
+115wangpan
+12factor-vault
+131228_pytest_1
+1337
+153957-theme
+...
+...
+...
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: stránky PyPi prosím nepřetěžujte, ať se
+v&nbsp;logu neobjeví stovky dotazů z&nbsp;.cz domény.</div></p>
+
+
+
+<p><a name="k14"></a></p>
+<h2 id="k14">14. Složitější příklad &ndash; získání klíčových slov přiřazených k&nbsp;balíčkům</h2>
+
+<p>Další demonstrační příklad, s&nbsp;nímž se dnes seznámíme, je rozdělen na
+dvě části. První část již známe &ndash; slouží k&nbsp;načtení seznamu balíčku
+z&nbsp;PyPi:</p>
+
+<pre>
+response = requests.get("https://pypi.python.org/simple/")
+&nbsp;
+soup = BeautifulSoup(response.text, "lxml")
+&nbsp;
+for a in soup.find_all("a")[:10]:
+    package_name = a.text
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: povšimněte si, že počet balíčků ve
+výsledku omezujeme na 10 prvních nalezených balíčků, a aby nebyla služba PyPi
+přetížená.</div></p>
+
+<p>Další část příkladu umístěná v&nbsp;programové smyčce se snaží pro každý
+balíček získat jeho stránku a tu naparsovat:</p>
+
+<pre>
+    url = urljoin("https://pypi.python.org/pypi/project", package_name)
+    response = requests.get(url)
+&nbsp;
+    if response.status_code != 200:
+        print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+    package_soup = BeautifulSoup(response.text, "lxml")
+</pre>
+
+<p>Ve třetím a současně i posledním kroku se pokusíme přečíst obsah odstavců
+(&bdquo;p&ldquo;) s&nbsp;třídou &bdquo;class&ldquo; nastavenou na hodnotu
+&bdquo;tags&ldquo;. Právě v&nbsp;těchto odstavcích jsou umístěna klíčová slova
+popisující balíček:</p>
+
+<pre>
+    meta_keywords = package_soup.find_all("p", attrs={"class": "tags"})
+    if len(meta_keywords) &lt; 1:
+        print("Failed to parse and find keywords for '{p}'".format(p=package_name))
+        continue
+&nbsp;
+    print(meta_keywords)
+</pre>
+
+<p>Úplný zdrojový kód tohoto demonstračního příkladu vypadá následovně:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+&nbsp;
+response = requests.get("https://pypi.python.org/simple/")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "lxml")
+&nbsp;
+for a in soup.find_all("a")[:10]:
+    package_name = a.text
+&nbsp;
+    url = urljoin("https://pypi.python.org/pypi/project", package_name)
+    response = requests.get(url)
+&nbsp;
+    if response.status_code != 200:
+        print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+    package_soup = BeautifulSoup(response.text, "lxml")
+    meta_keywords = package_soup.find_all("p", attrs={"class": "tags"})
+    if len(meta_keywords) &lt; 1:
+        print("Failed to parse and find keywords for '{p}'".format(p=package_name))
+        continue
+&nbsp;
+    print(meta_keywords)
+</pre>
+
+<p>Z&nbsp;výsledků je patrné, že u některých balíčků nejsou klíčová slova
+uvedena:</p>
+
+<pre>
+Failed to parse and find keywords for '0'
+Failed to parse and find keywords for '0-._.-._.-._.-._.-._.-._.-0'
+[&lt;p class="tags"&gt;
+&lt;i aria-hidden="true" class="fa fa-tags"&gt;&lt;/i&gt;
+&lt;span class="sr-only"&gt;Tags:&lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      tensorflow,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      tfrecord
+    &lt;/span&gt;
+&lt;/p&gt;, &lt;p class="tags"&gt;
+&lt;i aria-hidden="true" class="fa fa-tags"&gt;&lt;/i&gt;
+&lt;span class="sr-only"&gt;Tags:&lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      tensorflow,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      tfrecord
+    &lt;/span&gt;
+&lt;/p&gt;]
+Failed to parse and find keywords for '00SMALINUX'
+Failed to parse and find keywords for '01changer'
+Failed to parse and find keywords for '021'
+Failed to parse and find keywords for '02exercicio'
+Failed to parse and find keywords for '0805nexter'
+Failed to parse and find keywords for '0-core-client'
+Failed to parse and find keywords for '0FELA'
+Failed to parse and find keywords for '0-orchestrator'
+Failed to parse and find keywords for '0wdg9nbmpm'
+Failed to parse and find keywords for '0wned'
+Failed to parse and find keywords for '0x'
+[&lt;p class="tags"&gt;
+&lt;i aria-hidden="true" class="fa fa-tags"&gt;&lt;/i&gt;
+&lt;span class="sr-only"&gt;Tags:&lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      notch,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      asm,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      dcpu-16,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      dcpu,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      assembly,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      asm
+    &lt;/span&gt;
+&lt;/p&gt;, &lt;p class="tags"&gt;
+&lt;i aria-hidden="true" class="fa fa-tags"&gt;&lt;/i&gt;
+&lt;span class="sr-only"&gt;Tags:&lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      notch,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      asm,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      dcpu-16,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      dcpu,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      assembly,
+    &lt;/span&gt;
+&lt;span class="package-keyword"&gt;
+      asm
+    &lt;/span&gt;
+&lt;/p&gt;]
+Failed to parse and find keywords for '1'
+</pre>
+
+
+
+<p><a name="k15"></a></p>
+<h2 id="k15">15. Další zpracování klíčových slov přiřazených k&nbsp;balíčkům</h2>
+
+<p>Ve skutečnosti je možné informace s&nbsp;klíčovými slovy dále zpracovat,
+protože z&nbsp;předchozího výpisu bylo patrné, že se uvnitř odstavců
+s&nbsp;třídou &bdquo;tags&ldquo; nachází jednotlivá klíčová slova
+v&nbsp;samostatných značkách &lt;span&gt; s&nbsp;třídou pojmenovanou
+&bdquo;package-keyword&ldquo;. Těchto značek může být pro jeden balíček
+několik, takže celé zpracování klíčových slov může vypadat takto:</p>
+
+<pre>
+    print("Keywords for package '{p}'".format(p=package_name))
+    keywords_spans = meta_keywords[0].find_all("span", attrs={"class": "package-keyword"})
+    for span in keywords_spans:
+        for word in span.contents:
+            print([k.strip().lower() for k in word.split(",") if k.strip() != ""])
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: zpracování je v&nbsp;tomto případě
+nepatrně složitější, protože u některých balíčků nalezneme v&nbsp;jedné značce
+&lt;span&gt; více klíčových slov oddělených čárkou. Proto se také uvnitř smyčky
+používá metoda string.split()</div>.</p>
+
+<p>Opět si ukažme úplný zdrojový kód tohoto příkladu:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+&nbsp;
+response = requests.get("https://pypi.python.org/simple/")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "lxml")
+&nbsp;
+for a in soup.find_all("a")[:20]:
+    package_name = a.text
+&nbsp;
+    url = urljoin("https://pypi.python.org/pypi/project", package_name)
+    response = requests.get(url)
+&nbsp;
+    if response.status_code != 200:
+        print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+    package_soup = BeautifulSoup(response.text, "lxml")
+    meta_keywords = package_soup.find_all("p", attrs={"class": "tags"})
+    if len(meta_keywords) &lt; 1:
+        print("Failed to parse and find keywords for '{p}'".format(p=package_name))
+        continue
+&nbsp;
+    print("Keywords for package '{p}'".format(p=package_name))
+    keywords_spans = meta_keywords[0].find_all("span", attrs={"class": "package-keyword"})
+    for span in keywords_spans:
+        for word in span.contents:
+            print([k.strip().lower() for k in word.split(",") if k.strip() != ""])
+</pre>
+
+<p>Výsledky by pro několik prvních balíčků měly vypadat takto:</p>
+
+<pre>
+Failed to parse and find keywords for '0'
+Failed to parse and find keywords for '0-._.-._.-._.-._.-._.-._.-0'
+Keywords for package '0.0.1'
+['tensorflow']
+['tfrecord']
+Failed to parse and find keywords for '00SMALINUX'
+Failed to parse and find keywords for '01changer'
+Failed to parse and find keywords for '021'
+Failed to parse and find keywords for '02exercicio'
+Failed to parse and find keywords for '0805nexter'
+Failed to parse and find keywords for '0-core-client'
+Failed to parse and find keywords for '0FELA'
+Failed to parse and find keywords for '0-orchestrator'
+Failed to parse and find keywords for '0wdg9nbmpm'
+Failed to parse and find keywords for '0wned'
+Failed to parse and find keywords for '0x'
+Keywords for package '0x10c-asm'
+['notch']
+['asm']
+['dcpu-16']
+['dcpu']
+['assembly']
+['asm']
+Failed to parse and find keywords for '1'
+Failed to parse and find keywords for '100bot'
+Failed to parse and find keywords for '1020-nester'
+Keywords for package '10daysweb'
+['web']
+['framework']
+['async']
+Keywords for package '115wangpan'
+['115']
+['wangpan']
+['pan']
+['cloud']
+['lixian']
+Failed to parse and find keywords for '12factor-vault'
+Failed to parse and find keywords for '131228_pytest_1'
+Failed to parse and find keywords for '1337'
+Keywords for package '153957-theme'
+['photo album']
+['theme']
+['sigal']
+['galleria']
+</pre>
+
+
+
+<p><a name="k16"></a></p>
+<h2 id="k16">16. Získání tučného textu z&nbsp;HTML stránky</h2>
+
+<p>Vraťme se nyní opět ke stránkám Rootu. Další příklad (resp.&nbsp;jeho část)
+slouží pro zobrazení všech textů umístěných do značky &lt;strong&gt;. Tuto
+značku často používám pro zvýraznění textu, takže si vyzkoušejme, kolikrát je
+použita v&nbsp;minulém článku <a
+href="https://www.root.cz/clanky/zaklady-pouziti-rezimu-org-mode-v-emacsu/">Základy
+použití režimu org-mode v Emacsu</a>:</p>
+
+<pre>
+response = requests.get("https://www.root.cz/clanky/zaklady-pouziti-rezimu-org-mode-v-emacsu/")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "html.parser")
+&nbsp;
+for p in soup.find_all("strong"):
+    print(p.text)
+</pre>
+
+<p>Výsledky budou vypadat následovně:</p>
+
+<pre>
+Hlavní navigace
+Základy použití režimu org-mode v Emacsu
+17 minut
+org-mode
+vim-orgmode
+org-mode
+Install
+rsync
+TAB
+TAB
+TABu
+C-c -
+C-c *
+M-RETURN
+C-c |
+C-c -
+M-šipka nahoru
+M-šipka dolů
+C-SPACE
+C-c ^
+C-c C-c
+C-c C-c
+C-c C-c
+C-c C-x C-b
+C-c #
+C-c #
+TAB
+TAB
+TAB
+TAB
+C-c *
+C-u C-c *
+A1
+@2$3
+@2$+1
+@2$-1
+$&lt;
+$&gt;
+$3
+@2
+C-c }
+C-c }
+M-šipka
+M-šipka doprava
+M-šipka dolů
+M-šipka dolů
+C-c C-l
+vim-orgmode
+org-mode
+org-mode
+Root.cz
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: drobné nepřesnosti jsou způsobeny tím,
+že se značka &lt;strong&gt; nachází i v&nbsp;okolním textu mimo hlavní
+článek.</div></p>
+
+
+
+<p><a name="k17"></a></p>
+<h2 id="k17">17. Přečtení obsahu tabulek z&nbsp;HTML stránky</h2>
+
+<p>Druhá část příkladu je již mnohem zajímavější, protože se v&nbsp;něm
+pokusíme zpravovat obsah všech nalezených tabulek. Samotné získání všech
+tabulek je snadné:</p>
+
+<pre>
+soup = BeautifulSoup(response.text, "html.parser")
+&nbsp;
+for table in soup.find_all("table"):
+    ...
+    ...
+    ...
+</pre>
+
+<p>Pro každou tabulku ve vnitřní smyčce získáme všechny řádky představované
+značkou &lt;tr&gt;:</p>
+
+<pre>
+    for tr in table.find_all("tr"):
+        ...
+        ...
+        ...
+</pre>
+
+<p>A konečně přichází nejzajímavější část celého příkladu &ndash; získání všech
+značek &lt;th&gt; a současně &lt;td&gt;. Povšimněte si, že metodě
+<strong>find_all()</strong> můžeme předat seznam značek:</p>
+
+<pre>
+        for item in tr.find_all(["th", "td"]):
+            print(item.text + "\t|\t", end="")
+</pre>
+
+<p>Celé zpracování tabulek je záležitost několika programových řádků:</p>
+
+<pre>
+response = requests.get("https://www.root.cz/clanky/zaklady-pouziti-rezimu-org-mode-v-emacsu/")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "html.parser")
+&nbsp;
+for table in soup.find_all("table"):
+    for tr in table.find_all("tr"):
+        for item in tr.find_all(["th", "td"]):
+            print(item.text + "\t|\t", end="")
+        print()
+    print("-------------------")
+</pre>
+
+<p>Výsledek v&nbsp;případě, že jsme se příliš nesnažili o formátování (pouze
+používáme znak \t):</p>
+
+<pre>
+Tables
+Klávesa |       Význam klávesy (příkazu)        |       
+TAB     |       změna viditelnosti konkrétního vybraného podstromu (postupně se rotuje mezi různými úrovněmi)   |       
+S-TAB   |       změna viditelnosti obsahu celého bufferu (dokumentu)    |       
+C-u C-u TAB     |       výchozí nastavení viditelnosti  |       
+C-u C-u C-u TAB |       zobrazení obsahu celého souboru, tj. celé jeho struktury        |       
+-------------------
+Klávesa |       Význam  |       
+M-RET   |       přidání dalšího prvku do (ne)číslovaného seznamu        |       
+        |               |       
+C-c –   |       postupná změna typu prvku (číslovaný seznam atd.)       |       
+C-c ^   |       seřazení seznamu        |       
+C-c *   |       převedení aktivního prvku na nadpis     |       
+C-c |   |       převod seznamu (i jiného bloku) na tabulku      |       
+-------------------
+Klávesa |       Význam  |       
+M-šipka nahoru  |       přesun prvku v rámci seznamu nahoru     |       
+M-šipka dolů    |       přesun prvku v rámci seznamu dolů       |       
+-------------------
+Objekt  |       Klávesová zkratka       |       Význam klávesové zkratky        |       
+strom/podstrom  |       TAB     |       změna viditelnosti konkrétního vybraného podstromu (postupně se rotuje mezi různými úrovněmi)   |       
+strom/podstrom  |       S-TAB   |       změna viditelnosti obsahu celého bufferu (dokumentu)    |       
+celý dokument   |       C-u C-u TAB     |       výchozí nastavení viditelnosti  |       
+celý dokument   |       C-u C-u C-u TAB |       zobrazení obsahu celého souboru, tj. celé jeho struktury        |       
+seznam  |       M-RET   |       přidání dalšího prvku do (ne)číslovaného seznamu        |       
+seznam  |       C-c –   |       postupná změna typu prvku (číslovaný seznam atd.)       |       
+seznam  |       C-c ^   |       seřazení seznamu        |       
+seznam  |       C-c *   |       převedení aktivního prvku na nadpis     |       
+seznam  |       C-c |   |       převod seznamu (i jiného bloku) na tabulku      |       
+seznam  |       M-šipka nahoru  |       přesun prvku v rámci seznamu nahoru     |       
+seznam  |       M-šipka dolů    |       přesun prvku v rámci seznamu dolů       |       
+checkbox        |       C-c C-c |       zaškrtnutí/zrušení zaškrtnutí políčka   |       
+checkbox        |       C-c C-x C-b     |       zaškrtnutí/zrušení více políček |       
+checkboxy       |       C-c #   |       výpočet % nebo zlomku dokončených úkolů |       
+tabulka |       C-c *   |       přepočet jednoho řádku  |       
+tabulka |       C-u C-c *       |       přepočet celé tabulky   |       
+tabulka |       C-c }   |       zobrazení indexů řádků i sloupců        |       
+tabulka |       M-šipka doleva  |       prohození dvou sloupců  |       
+tabulka |       M-šipka doprava |       prohození dvou sloupců  |       
+tabulka |       M-šipka nahoru  |       prohození dvou řádků    |       
+tabulka |       M-šipka dolů    |       prohození dvou řádků    |       
+dokument        |       C-c C-l |       vložení odkazu (linku)  |       
+-------------------
+</pre>
+
+
+
+<p><a name="k18"></a></p>
+<h2 id="k18">18. Úplný zdrojový kód předchozího demonstračního příkladu</h2>
+
+<p>Úplný zdrojový kód demonstračního příkladu, který načte jeden článek
+z&nbsp;Roota a vypíše všechny tučné texty i obsah všech tabulek, vypadá
+takto:</p>
+
+<pre>
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+&nbsp;
+response = requests.get("https://www.root.cz/clanky/zaklady-pouziti-rezimu-org-mode-v-emacsu/")
+&nbsp;
+if response.status_code != 200:
+    print("Chyba při přístupu na stránku: ", response.status_code)
+&nbsp;
+soup = BeautifulSoup(response.text, "html.parser")
+&nbsp;
+for p in soup.find_all("strong"):
+    print(p.text)
+&nbsp;
+print("\n\n\nTables")
+&nbsp;
+for table in soup.find_all("table"):
+    for tr in table.find_all("tr"):
+        for item in tr.find_all(["th", "td"]):
+            print(item.text + "\t|\t", end="")
+        print()
+    print("-------------------")
+</pre>
+
+
+
+<p><a name="k19"></a></p>
+<h2 id="k19">19. Repositář s&nbsp;demonstračními příklady</h2>
+
+<p>Všechny dnes popisované demonstrační příklady byly uloženy do Git
+repositáře, který je dostupný na adrese <a
+href="https://github.com/tisnik/lxml-examples">https://github.com/tisnik/lxml-examples</a>.
+Příklady si můžete v&nbsp;případě potřeby stáhnout i jednotlivě bez nutnosti
+klonovat celý repositář:</p>
+
+<table>
+<tr><th> #</th><th>Příklad</th><th>Popis</th><th>Odkaz</th></tr>
+<tr><td> 1</td><td>read_pom1.py</td><td>načtení pom.xml a výpis uzlů pod rootem</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom1.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom1.py</a></td></tr>
+<tr><td> 2</td><td>read_pom2.py</td><td>výpis informací o projektu: artifact, group a verze</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom2.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom2.py</a></td></tr>
+<tr><td> 3</td><td>read_pom3.py</td><td>výpis group ID všech knihoven, na nichž projekt závisí</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom3.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom3.py</a></td></tr>
+<tr><td> 4</td><td>read_pom4.py</td><td>vylepšení předchozího příkladu</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom4.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom4.py</a></td></tr>
+<tr><td> 5</td><td>read_pom5.py</td><td>použití // v&nbsp;cestě</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom5.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom5.py</a></td></tr>
+<tr><td> 6</td><td>read_pom6.py</td><td>použití podmínky v&nbsp;cestě</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom6.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom6.py</a></td></tr>
+<tr><td> 7</td><td>read_pom7.py</td><td>relativní adresování .. v&nbsp;cestě</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom7.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom7.py</a></td></tr>
+<tr><td> 8</td><td>read_pom8.py</td><td>relativní adresování .. v&nbsp;cestě</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/read_pom8.py">https://github.com/tisnik/lxml-examples/blob/master/read_pom8.py</a></td></tr>
+<tr><td> 9</td><td>beautiful_soup1.py</td><td>získání základních informací z&nbsp;HTML stránky</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup1.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup1.py</a></td></tr>
+<tr><td>10</td><td>beautiful_soup2.py</td><td>vylepšení předchozího příkladu</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup2.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup2.py</a></td></tr>
+<tr><td>11</td><td>beautiful_soup3.py</td><td>nalezení všech značek &lt;title&gt; a výpis jejich obsahu</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup3.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup3.py</a></td></tr>
+<tr><td>12</td><td>beautiful_soup4.py</td><td>výpis všech odkazů ve značkách &lt;a&gt;</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup4.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup4.py</a></td></tr>
+<tr><td>13</td><td>beautiful_soup5.py</td><td>získání klíčových slov přiřazených k&nbsp;balíčkům</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup5.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup5.py</a></td></tr>
+<tr><td>14</td><td>beautiful_soup6.py</td><td>zpracování klíčových slov přiřazených k&nbsp;balíčkům</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup6.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup6.py</a></td></tr>
+<tr><td>14</td><td>beautiful_soup7.py</td><td>získání informací o tabulkách</td><td><a href="https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup7.py">https://github.com/tisnik/lxml-examples/blob/master/beautiful_soup7.py</a></td></tr>
+</table>
+
+<p><div class="rs-tip-major">Poznámka: v&nbsp;repositáři jsou uloženy i
+výsledky běhu jednotlivých příkladů, tj.&nbsp;vytvořené XML soubory
+popř.&nbsp;naopak výsledek jejich parsování.</div></p>
+
+
+
+<p><a name="k20"></a></p>
+<h2 id="k20">20. Odkazy na Internetu</h2>
+
+<ol>
+
+<li>lxml - XML and HTML with Python<br />
+<a href="https://lxml.de/index.html">https://lxml.de/index.html</a>
+</li>
+
+<li>Knihovna lxml na PyPi<br />
+<a href="https://pypi.org/project/lxml/">https://pypi.org/project/lxml/</a>
+</li>
+
+<li>ElementTree and lxml<br />
+<a href="https://wiki.python.org/moin/Tutorials%20on%20XML%20processing%20with%20Python">https://wiki.python.org/moin/Tutorials%20on%20XML%20processing%20with%20Python</a>
+</li>
+
+<li>ElementTree Overview<br />
+<a href="http://effbot.org/zone/element-index.htm">http://effbot.org/zone/element-index.htm</a>
+</li>
+
+<li>Elements and Element Trees<br />
+<a href="http://effbot.org/zone/element.htm">http://effbot.org/zone/element.htm</a>
+</li>
+
+<li>Python XML processing with lxml<br />
+<a href="http://infohost.nmt.edu/tcc/help/pubs/pylxml/web/index.html">http://infohost.nmt.edu/tcc/help/pubs/pylxml/web/index.html</a>
+</li>
+
+<li>Dive into Python 3: XML<br />
+<a href="http://www.diveintopython3.net/xml.html">http://www.diveintopython3.net/xml.html</a>
+</li>
+
+<li>Programovací jazyk Clojure – základy zpracování XML<br />
+<a href="https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/">https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/</a>
+</li>
+
+<li>xml-zip<br />
+<a href="http://clojuredocs.org/clojure.zip/xml-zip">http://clojuredocs.org/clojure.zip/xml-zip</a>
+</li>
+
+<li>xml-seq<br />
+<a href="http://clojuredocs.org/clojure.core/xml-seq">http://clojuredocs.org/clojure.core/xml-seq</a>
+</li>
+
+<li>Parsing XML in Clojure<br />
+<a href="https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/">https://www.root.cz/clanky/programovaci-jazyk-clojure-zaklady-zpracovani-xml/</a>
+</li>
+
+<li>Tree structure<br />
+<a href="https://en.wikipedia.org/wiki/Tree_structure">https://en.wikipedia.org/wiki/Tree_structure</a>
+</li>
+
+<li>Strom (datová struktura)<br />
+<a href="https://cs.wikipedia.org/wiki/Strom_(datov%C3%A1_struktura)">https://cs.wikipedia.org/wiki/Strom_(datov%C3%A1_struktura)</a>
+</li>
+
+<li>Element Library Functions<br />
+<a href="http://effbot.org/zone/element-lib.htm#prettyprint">http://effbot.org/zone/element-lib.htm#prettyprint</a>
+</li>
+
+<li>The XML C parser and toolkit of Gnome<br />
+<a href="http://xmlsoft.org/">http://xmlsoft.org/</a>
+</li>
+
+<li>XML Tutorial na zvon.org<br />
+<a href="http://www.zvon.org/comp/r/tut-XML.html">http://www.zvon.org/comp/r/tut-XML.html</a>
+</li>
+
+<li>Extensible Markup Language (XML) 1.0 (Fifth Edition)<br />
+<a href="https://www.w3.org/TR/REC-xml/">https://www.w3.org/TR/REC-xml/</a>
+</li>
+
+<li>XML Processing Modules (pro Python)<br />
+<a href="https://docs.python.org/3/library/xml.html">https://docs.python.org/3/library/xml.html</a>
+</li>
+
+<li>Užitečné knihovny a moduly pro Python: knihovna Requests<br />
+<a href="https://mojefedora.cz/uzitecne-knihovny-pro-python-requests-1/">https://mojefedora.cz/uzitecne-knihovny-pro-python-requests-1/</a>
+</li>
+
+<li>Užitečné knihovny a moduly pro Python: další možnosti nabízené knihovnou Requests<br />
+<a href="https://mojefedora.cz/uzitecne-knihovny-a-moduly-pro-python-dalsi-moznosti-nabizene-knihovnou-requests/">https://mojefedora.cz/uzitecne-knihovny-a-moduly-pro-python-dalsi-moznosti-nabizene-knihovnou-requests/</a>
+</li>
+
+<li>Extensible Markup Language<br />
+<a href="https://en.wikipedia.org/wiki/XML">https://en.wikipedia.org/wiki/XML</a>
+</li>
+
+<li>Extensible Markup Language<br />
+<a href="https://cs.wikipedia.org/wiki/Extensible_Markup_Language">https://cs.wikipedia.org/wiki/Extensible_Markup_Language</a>
+</li>
+
+<li>Slabikář XML – odkazy<br />
+<a href="https://www.interval.cz/clanky/slabikar-xml-odkazy/">https://www.interval.cz/clanky/slabikar-xml-odkazy/</a>
+</li>
+
+<li>XML editors<br />
+<a href="http://www.xml-dev.com/">http://www.xml-dev.com/</a>
+</li>
+
+<li>lxml FAQ - Frequently Asked Questions<br />
+<a href="https://lxml.de/FAQ.html">https://lxml.de/FAQ.html</a>
+</li>
+
+<li>XML pro začátečníky - 1. část<br />
+<a href="http://programujte.com/clanek/2007030501-xml-pro-zacatecniky-1-cast/">http://programujte.com/clanek/2007030501-xml-pro-zacatecniky-1-cast/</a>
+</li>
+
+<li>XML pro web aneb od teorie k praxi, 2.díl<br />
+<a href="https://www.zive.cz/clanky/xml-pro-web-aneb-od-teorie-k-praxi-2dil/sc-3-a-109709/default.aspx">https://www.zive.cz/clanky/xml-pro-web-aneb-od-teorie-k-praxi-2dil/sc-3-a-109709/default.aspx</a>
+</li>
+
+<li>XML Schema<br />
+<a href="https://cs.wikipedia.org/wiki/XML_Schema">https://cs.wikipedia.org/wiki/XML_Schema</a>
+</li>
+
+<li>Meaning of - &lt;?xml version=“1.0” encoding=“utf-8”?&gt;<br />
+<a href="https://stackoverflow.com/questions/13743250/meaning-of-xml-version-1-0-encoding-utf-8#27398439">https://stackoverflow.com/questions/13743250/meaning-of-xml-version-1-0-encoding-utf-8#27398439</a>
+</li>
+
+<li>Beautiful Soup<br />
+<a href="https://www.crummy.com/software/BeautifulSoup/">https://www.crummy.com/software/BeautifulSoup/</a>
+</li>
+
+<li>Web scraping<br />
+<a href="https://en.wikipedia.org/wiki/Web_scraping">https://en.wikipedia.org/wiki/Web_scraping</a>
+</li>
+
+<li>Introduction to the POM<br />
+<a href="https://maven.apache.org/guides/introduction/introduction-to-the-pom.html">https://maven.apache.org/guides/introduction/introduction-to-the-pom.html</a>
+</li>
+
+<li>Super POM<br />
+<a href="https://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Super_POM">https://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Super_POM</a>
+</li>
+
+<li>Maven - POM<br />
+<a href="https://www.tutorialspoint.com/maven/maven_pom.htm">https://www.tutorialspoint.com/maven/maven_pom.htm</a>
+</li>
+
+<li>XPath examples<br />
+<a href="https://www.w3schools.com/xml/xpath_examples.asp">https://www.w3schools.com/xml/xpath_examples.asp</a>
+</li>
+
+<li>XPath Axes<br />
+<a href="https://www.w3schools.com/xml/xpath_axes.asp">https://www.w3schools.com/xml/xpath_axes.asp</a>
+</li>
+
+<li>Guide to naming conventions on groupId, artifactId, and version<br />
+<a href="http://maven.apache.org/guides/mini/guide-naming-conventions.html">http://maven.apache.org/guides/mini/guide-naming-conventions.html</a>
+</li>
+
+<li>What is meaning of .// in XPath?<br />
+<a href="https://stackoverflow.com/questions/31375091/what-is-meaning-of-in-xpath">https://stackoverflow.com/questions/31375091/what-is-meaning-of-in-xpath</a>
+</li>
+
+<li>Using "//" And ".//" Expressions In XPath XML<br />
+<a href="https://www.bennadel.com/blog/2142-using-and-expressions-in-xpath-xml-search-directives-in-coldfusion.htm">https://www.bennadel.com/blog/2142-using-and-expressions-in-xpath-xml-search-directives-in-coldfusion.htm</a>
+</li>
+
+<li>Using parent dot notation in xpath to find another branch in the XML tree<br />
+<a href="https://stackoverflow.com/questions/5370544/using-parent-dot-notation-in-xpath-to-find-another-branch-in-the-xml-tree#5370817">https://stackoverflow.com/questions/5370544/using-parent-dot-notation-in-xpath-to-find-another-branch-in-the-xml-tree#5370817</a>
+</li>
+
+</ol>
+
+
+
+<p></p><p></p>
+<p><small>Autor: <a href="http://www.fit.vutbr.cz/~tisnovpa">Pavel Tišnovský</a> &nbsp; 2018</small></p>
+</body>
+</html>
+
